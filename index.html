@@ -4,12 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f2424" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Quiz Anglais" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
   <title>Quiz Anglais</title>
   <style>
     :root {
       --bg: #0f2424;
       --panel: #142c2c;
-      --panel-2: #1b3838;
       --border: #38515a;
       --text: #f4f8f8;
       --muted: #9ab0b4;
@@ -36,7 +42,7 @@
       justify-content: center;
     }
 
-    button, input, select {
+    button {
       font: inherit;
     }
 
@@ -195,6 +201,25 @@
       color: var(--muted);
       font-size: 14px;
       font-weight: 700;
+    }
+
+    .install-box {
+      display: none;
+      border: 3px solid #4d6b28;
+      border-radius: 24px;
+      background: #182b19;
+      padding: 14px;
+      margin: 16px 0 0;
+    }
+
+    .install-box.show {
+      display: block;
+    }
+
+    .install-box p {
+      margin-bottom: 10px;
+      color: #dfffd1;
+      font-weight: 800;
     }
 
     .info-line {
@@ -393,6 +418,10 @@
           <div class="stat"><strong id="bestScore">0</strong><span>meilleur score</span></div>
           <div class="stat"><strong id="playedCount">0</strong><span>séries jouées</span></div>
         </div>
+        <div class="install-box" id="installBox">
+          <p>Tu peux installer l’application sur ton téléphone.</p>
+          <button class="main-btn" id="installBtn">INSTALLER L’APPLICATION</button>
+        </div>
       </div>
 
       <h2>Profil</h2>
@@ -419,7 +448,7 @@
 
       <div class="bottom">
         <button class="main-btn" id="startBtn">COMMENCER</button>
-        <div class="small-note">Sans API, sans compte, prêt pour GitHub Pages.</div>
+        <div class="small-note">Prêt pour installation Android via Chrome.</div>
       </div>
     </section>
 
@@ -506,7 +535,8 @@
       index: 0,
       score: 0,
       selectedAnswer: null,
-      validated: false
+      validated: false,
+      installPrompt: null
     };
 
     const screens = {
@@ -527,6 +557,8 @@
     const resultTitle = document.getElementById("resultTitle");
     const resultScore = document.getElementById("resultScore");
     const resultMessage = document.getElementById("resultMessage");
+    const installBox = document.getElementById("installBox");
+    const installBtn = document.getElementById("installBtn");
 
     document.querySelectorAll("[data-profile]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -553,11 +585,38 @@
     document.getElementById("startBtn").addEventListener("click", startQuiz);
     document.getElementById("audioBtn").addEventListener("click", speakCurrentWord);
     document.getElementById("cantListenBtn").addEventListener("click", showWrittenWord);
-    document.getElementById("validateBtn").addEventListener("click", validateOrContinue);
+    validateBtn.addEventListener("click", validateOrContinue);
     document.getElementById("restartBtn").addEventListener("click", goHome);
     document.getElementById("closeBtn").addEventListener("click", goHome);
+    installBtn.addEventListener("click", installApp);
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      state.installPrompt = event;
+      installBox.classList.add("show");
+    });
+
+    window.addEventListener("appinstalled", () => {
+      state.installPrompt = null;
+      installBox.classList.remove("show");
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
 
     updateHomeStats();
+
+    function installApp() {
+      if (!state.installPrompt) return;
+      state.installPrompt.prompt();
+      state.installPrompt.userChoice.finally(() => {
+        state.installPrompt = null;
+        installBox.classList.remove("show");
+      });
+    }
 
     function selectButton(selector, activeButton) {
       document.querySelectorAll(selector).forEach((button) => button.classList.remove("selected"));
