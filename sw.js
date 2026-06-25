@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-anglais-v4";
+const CACHE_NAME = "quiz-anglais-v5";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -24,7 +24,26 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const request = event.request;
+
+  if (request.mode === "navigate" || request.url.endsWith("index.html")) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse.clone()));
+          return networkResponse;
+        })
+        .catch(() => caches.match(request).then((cachedResponse) => cachedResponse || caches.match("./index.html")))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => cachedResponse || fetch(event.request))
+    caches.match(request).then((cachedResponse) => {
+      return cachedResponse || fetch(request).then((networkResponse) => {
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse.clone()));
+        return networkResponse;
+      });
+    })
   );
 });
