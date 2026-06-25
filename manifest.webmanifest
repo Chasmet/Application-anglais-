@@ -1,0 +1,21 @@
+{
+  "name": "Quiz Anglais",
+  "short_name": "Quiz Anglais",
+  "description": "Application mobile simple pour apprendre l’anglais avec des quiz audio.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f2424",
+  "theme_color": "#0f2424",
+  "categories": ["education", "kids", "language"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
