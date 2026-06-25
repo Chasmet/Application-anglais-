@@ -27,10 +27,7 @@
       --shadow: rgba(0, 0, 0, 0.25);
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -42,9 +39,7 @@
       justify-content: center;
     }
 
-    button {
-      font: inherit;
-    }
+    button { font: inherit; }
 
     .app {
       width: 100%;
@@ -97,15 +92,8 @@
       white-space: nowrap;
     }
 
-    .screen {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-    }
-
-    .screen.active {
-      display: flex;
-    }
+    .screen { display: none; flex: 1; flex-direction: column; }
+    .screen.active { display: flex; }
 
     h1 {
       font-size: clamp(30px, 7vw, 38px);
@@ -114,10 +102,7 @@
       letter-spacing: -0.8px;
     }
 
-    h2 {
-      font-size: 22px;
-      margin: 22px 0 12px;
-    }
+    h2 { font-size: 22px; margin: 22px 0 12px; }
 
     p {
       color: var(--muted);
@@ -126,17 +111,14 @@
       margin: 0 0 14px;
     }
 
-    .grid-two {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .choice-btn,
     .answer-btn,
     .audio-btn,
     .ghost-btn,
-    .main-btn {
+    .main-btn,
+    .mission-btn {
       border: 3px solid var(--border);
       border-radius: 22px;
       background: var(--panel);
@@ -153,7 +135,8 @@
       box-shadow: 0 4px 0 #263c42;
     }
 
-    .choice-btn.selected {
+    .choice-btn.selected,
+    .mission-btn.selected {
       border-color: var(--green);
       background: #213b25;
       color: #e4ffd5;
@@ -164,12 +147,12 @@
     .answer-btn:active,
     .audio-btn:active,
     .ghost-btn:active,
-    .main-btn:active {
-      transform: scale(0.98);
-    }
+    .main-btn:active,
+    .mission-btn:active { transform: scale(0.98); }
 
     .home-card,
-    .result-card {
+    .result-card,
+    .roadmap-card {
       border: 3px solid var(--border);
       border-radius: 26px;
       background: rgba(20, 44, 44, 0.84);
@@ -177,12 +160,7 @@
       margin-bottom: 16px;
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 10px;
-    }
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
 
     .stat {
       border-radius: 18px;
@@ -191,17 +169,8 @@
       border: 2px solid #263f46;
     }
 
-    .stat strong {
-      display: block;
-      font-size: 24px;
-      color: var(--green);
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-    }
+    .stat strong { display: block; font-size: 24px; color: var(--green); }
+    .stat span { color: var(--muted); font-size: 14px; font-weight: 700; }
 
     .install-box {
       display: none;
@@ -212,15 +181,52 @@
       margin: 16px 0 0;
     }
 
-    .install-box.show {
-      display: block;
+    .install-box.show { display: block; }
+    .install-box p { margin-bottom: 10px; color: #dfffd1; font-weight: 800; }
+
+    .roadmap-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
-    .install-box p {
-      margin-bottom: 10px;
-      color: #dfffd1;
-      font-weight: 800;
+    .roadmap-total {
+      font-size: 18px;
+      color: var(--yellow);
+      font-weight: 1000;
+      white-space: nowrap;
     }
+
+    .mission-list { display: grid; gap: 12px; }
+
+    .mission-btn {
+      width: 100%;
+      padding: 14px;
+      text-align: left;
+      box-shadow: 0 4px 0 #263c42;
+    }
+
+    .mission-btn.locked {
+      opacity: 0.48;
+      filter: grayscale(0.5);
+      cursor: not-allowed;
+    }
+
+    .mission-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .mission-title { font-size: 19px; font-weight: 1000; }
+    .mission-stars { font-size: 18px; color: var(--yellow); letter-spacing: 1px; white-space: nowrap; }
+    .mission-info { color: var(--muted); font-size: 14px; font-weight: 800; }
+    .mission-status { margin-top: 8px; font-size: 14px; font-weight: 1000; color: var(--green); }
+    .mission-btn.locked .mission-status { color: #b8bec0; }
 
     .info-line {
       display: flex;
@@ -246,12 +252,7 @@
       box-shadow: 0 5px 0 #263c42;
     }
 
-    .wave {
-      display: inline-block;
-      letter-spacing: 2px;
-      font-size: 28px;
-      transform: translateY(1px);
-    }
+    .wave { display: inline-block; letter-spacing: 2px; font-size: 28px; transform: translateY(1px); }
 
     .word-help {
       display: none;
@@ -266,16 +267,9 @@
       margin-bottom: 16px;
     }
 
-    .word-help.show {
-      display: block;
-    }
+    .word-help.show { display: block; }
 
-    .answers {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 8px;
-    }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
 
     .answer-btn {
       min-height: 88px;
@@ -285,29 +279,10 @@
       box-shadow: 0 5px 0 #263c42;
     }
 
-    .answer-btn.selected {
-      border-color: var(--blue);
-      background: #173242;
-      box-shadow: 0 5px 0 #23658a;
-    }
-
-    .answer-btn.correct {
-      border-color: var(--green);
-      background: #183d22;
-      color: #dfffcb;
-      box-shadow: 0 5px 0 var(--green-dark);
-    }
-
-    .answer-btn.wrong {
-      border-color: var(--red);
-      background: #421b1b;
-      color: #ffd6d6;
-      box-shadow: 0 5px 0 #b83232;
-    }
-
-    .answer-btn.locked {
-      pointer-events: none;
-    }
+    .answer-btn.selected { border-color: var(--blue); background: #173242; box-shadow: 0 5px 0 #23658a; }
+    .answer-btn.correct { border-color: var(--green); background: #183d22; color: #dfffcb; box-shadow: 0 5px 0 var(--green-dark); }
+    .answer-btn.wrong { border-color: var(--red); background: #421b1b; color: #ffd6d6; box-shadow: 0 5px 0 #b83232; }
+    .answer-btn.locked { pointer-events: none; }
 
     .feedback {
       min-height: 48px;
@@ -320,26 +295,11 @@
       text-align: center;
     }
 
-    .feedback.show {
-      display: block;
-    }
+    .feedback.show { display: block; }
+    .feedback.good { color: #e4ffd5; background: #183d22; border: 2px solid var(--green); }
+    .feedback.bad { color: #ffd6d6; background: #421b1b; border: 2px solid var(--red); }
 
-    .feedback.good {
-      color: #e4ffd5;
-      background: #183d22;
-      border: 2px solid var(--green);
-    }
-
-    .feedback.bad {
-      color: #ffd6d6;
-      background: #421b1b;
-      border: 2px solid var(--red);
-    }
-
-    .bottom {
-      margin-top: auto;
-      padding-top: 18px;
-    }
+    .bottom { margin-top: auto; padding-top: 18px; }
 
     .main-btn {
       width: 100%;
@@ -353,12 +313,7 @@
       box-shadow: 0 7px 0 var(--green-dark);
     }
 
-    .main-btn:disabled {
-      background: #42565e;
-      color: #122126;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
+    .main-btn:disabled { background: #42565e; color: #122126; box-shadow: none; cursor: not-allowed; }
 
     .ghost-btn {
       width: 100%;
@@ -372,24 +327,12 @@
       text-transform: uppercase;
     }
 
-    .result-card {
-      text-align: center;
-      padding: 28px 18px;
-    }
-
-    .result-score {
-      font-size: 58px;
-      font-weight: 1000;
-      color: var(--green);
-      margin: 16px 0;
-    }
-
-    .small-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 12px;
-    }
+    .result-card { text-align: center; padding: 28px 18px; }
+    .result-score { font-size: 58px; font-weight: 1000; color: var(--green); margin: 16px 0; }
+    .result-stars { font-size: 42px; color: var(--yellow); margin: 10px 0 16px; letter-spacing: 3px; }
+    .pass-note { font-weight: 1000; color: var(--green); }
+    .fail-note { font-weight: 1000; color: var(--red); }
+    .small-note { text-align: center; color: var(--muted); font-size: 13px; margin-top: 12px; }
 
     @media (max-width: 380px) {
       .app { padding: 16px; }
@@ -397,6 +340,7 @@
       .answer-btn { font-size: 18px; min-height: 78px; }
       .choice-btn { font-size: 18px; }
       .audio-btn { min-height: 96px; }
+      .mission-title { font-size: 17px; }
     }
   </style>
 </head>
@@ -404,18 +348,16 @@
   <main class="app">
     <header class="topbar">
       <button class="close-btn" id="closeBtn" aria-label="Retour">×</button>
-      <div class="progress-wrap" aria-label="Progression">
-        <div class="progress" id="progressBar"></div>
-      </div>
-      <div class="energy">⚡ 12</div>
+      <div class="progress-wrap" aria-label="Progression"><div class="progress" id="progressBar"></div></div>
+      <div class="energy">⭐ <span id="totalStarsTop">0</span></div>
     </header>
 
     <section class="screen active" id="homeScreen">
       <h1>Quiz anglais</h1>
       <div class="home-card">
-        <p>Écoute le mot en anglais, puis appuie sur la bonne réponse en français. Chaque question propose 4 choix.</p>
+        <p>Avance dans la roadmap. Pour débloquer la suite, il faut faire plus que la moyenne.</p>
         <div class="stats-row">
-          <div class="stat"><strong id="bestScore">0</strong><span>meilleur score</span></div>
+          <div class="stat"><strong id="bestScore">0%</strong><span>meilleur score</span></div>
           <div class="stat"><strong id="playedCount">0</strong><span>séries jouées</span></div>
         </div>
         <div class="install-box" id="installBox">
@@ -430,25 +372,18 @@
         <button class="choice-btn" data-profile="Nelvyn">Nelvyn</button>
       </div>
 
-      <h2>Série</h2>
-      <div class="grid-two">
-        <button class="choice-btn selected" data-count="3">3 quiz</button>
-        <button class="choice-btn" data-count="5">5 quiz</button>
-        <button class="choice-btn" data-count="10">10 quiz</button>
-        <button class="choice-btn" data-count="15">15 quiz</button>
-      </div>
-
-      <h2>Thème</h2>
-      <div class="grid-two">
-        <button class="choice-btn selected" data-theme="mix">Mélange</button>
-        <button class="choice-btn" data-theme="animaux">Animaux</button>
-        <button class="choice-btn" data-theme="ecole">École</button>
-        <button class="choice-btn" data-theme="maison">Maison</button>
+      <div class="roadmap-card">
+        <div class="roadmap-head">
+          <h2 style="margin:0">Roadmap</h2>
+          <div class="roadmap-total" id="roadmapTotal">0/24 ⭐</div>
+        </div>
+        <p>1 étoile minimum pour passer à la série suivante. 0 étoile = série bloquée.</p>
+        <div class="mission-list" id="missionList"></div>
       </div>
 
       <div class="bottom">
-        <button class="main-btn" id="startBtn">COMMENCER</button>
-        <div class="small-note">Prêt pour installation Android via Chrome.</div>
+        <button class="main-btn" id="startBtn" disabled>CHOISIS UNE SÉRIE</button>
+        <div class="small-note">Progression sauvegardée sur ce téléphone.</div>
       </div>
     </section>
 
@@ -457,17 +392,12 @@
         <span id="profileLabel">Yvane</span>
         <span id="scoreLabel">Score : 0</span>
       </div>
-
       <h1 id="questionTitle">Écoute le mot anglais</h1>
-
-      <button class="audio-btn" id="audioBtn" aria-label="Écouter le mot anglais">
-        🔊 <span class="wave">▁▂▃▄▅▆▅▄▃▂▁</span>
-      </button>
-
+      <p id="missionLabel"></p>
+      <button class="audio-btn" id="audioBtn" aria-label="Écouter le mot anglais">🔊 <span class="wave">▁▂▃▄▅▆▅▄▃▂▁</span></button>
       <div class="word-help" id="wordHelp"></div>
       <div class="answers" id="answersBox"></div>
       <div class="feedback" id="feedbackBox"></div>
-
       <div class="bottom">
         <button class="ghost-btn" id="cantListenBtn">Je ne peux pas écouter</button>
         <button class="main-btn" id="validateBtn" disabled>VALIDER</button>
@@ -479,9 +409,11 @@
       <div class="result-card">
         <h2 id="resultTitle">Bien joué</h2>
         <div class="result-score" id="resultScore">0/0</div>
+        <div class="result-stars" id="resultStars">☆☆☆</div>
         <p id="resultMessage"></p>
       </div>
       <div class="bottom">
+        <button class="ghost-btn" id="roadmapBtn">VOIR LA ROADMAP</button>
         <button class="main-btn" id="restartBtn">RECOMMENCER</button>
       </div>
     </section>
@@ -489,48 +421,59 @@
 
   <script>
     const WORDS = [
-      { en: "fish", fr: "poisson", theme: "animaux" },
-      { en: "cat", fr: "chat", theme: "animaux" },
-      { en: "dog", fr: "chien", theme: "animaux" },
-      { en: "bird", fr: "oiseau", theme: "animaux" },
-      { en: "horse", fr: "cheval", theme: "animaux" },
-      { en: "rabbit", fr: "lapin", theme: "animaux" },
-      { en: "lion", fr: "lion", theme: "animaux" },
-      { en: "tiger", fr: "tigre", theme: "animaux" },
-      { en: "school", fr: "école", theme: "ecole" },
-      { en: "book", fr: "livre", theme: "ecole" },
-      { en: "pen", fr: "stylo", theme: "ecole" },
-      { en: "teacher", fr: "professeur", theme: "ecole" },
-      { en: "student", fr: "élève", theme: "ecole" },
-      { en: "lesson", fr: "leçon", theme: "ecole" },
-      { en: "addition", fr: "addition", theme: "ecole" },
-      { en: "answer", fr: "réponse", theme: "ecole" },
-      { en: "house", fr: "maison", theme: "maison" },
-      { en: "door", fr: "porte", theme: "maison" },
-      { en: "window", fr: "fenêtre", theme: "maison" },
-      { en: "table", fr: "table", theme: "maison" },
-      { en: "chair", fr: "chaise", theme: "maison" },
-      { en: "bed", fr: "lit", theme: "maison" },
-      { en: "kitchen", fr: "cuisine", theme: "maison" },
-      { en: "garden", fr: "jardin", theme: "maison" },
-      { en: "cute", fr: "mignon", theme: "mix" },
-      { en: "evening", fr: "soirée", theme: "mix" },
-      { en: "water", fr: "eau", theme: "mix" },
-      { en: "sun", fr: "soleil", theme: "mix" },
-      { en: "moon", fr: "lune", theme: "mix" },
-      { en: "friend", fr: "ami", theme: "mix" },
-      { en: "family", fr: "famille", theme: "mix" },
-      { en: "football", fr: "football", theme: "mix" },
-      { en: "car", fr: "voiture", theme: "mix" },
-      { en: "green", fr: "vert", theme: "mix" },
-      { en: "blue", fr: "bleu", theme: "mix" },
-      { en: "red", fr: "rouge", theme: "mix" }
+      { en: "fish", fr: "poisson", theme: "animaux", level: "facile" },
+      { en: "cat", fr: "chat", theme: "animaux", level: "facile" },
+      { en: "dog", fr: "chien", theme: "animaux", level: "facile" },
+      { en: "bird", fr: "oiseau", theme: "animaux", level: "facile" },
+      { en: "horse", fr: "cheval", theme: "animaux", level: "moyen" },
+      { en: "rabbit", fr: "lapin", theme: "animaux", level: "moyen" },
+      { en: "lion", fr: "lion", theme: "animaux", level: "moyen" },
+      { en: "tiger", fr: "tigre", theme: "animaux", level: "moyen" },
+      { en: "school", fr: "école", theme: "ecole", level: "facile" },
+      { en: "book", fr: "livre", theme: "ecole", level: "facile" },
+      { en: "pen", fr: "stylo", theme: "ecole", level: "facile" },
+      { en: "teacher", fr: "professeur", theme: "ecole", level: "moyen" },
+      { en: "student", fr: "élève", theme: "ecole", level: "moyen" },
+      { en: "lesson", fr: "leçon", theme: "ecole", level: "moyen" },
+      { en: "addition", fr: "addition", theme: "ecole", level: "facile" },
+      { en: "answer", fr: "réponse", theme: "ecole", level: "moyen" },
+      { en: "house", fr: "maison", theme: "maison", level: "facile" },
+      { en: "door", fr: "porte", theme: "maison", level: "facile" },
+      { en: "window", fr: "fenêtre", theme: "maison", level: "moyen" },
+      { en: "table", fr: "table", theme: "maison", level: "facile" },
+      { en: "chair", fr: "chaise", theme: "maison", level: "facile" },
+      { en: "bed", fr: "lit", theme: "maison", level: "facile" },
+      { en: "kitchen", fr: "cuisine", theme: "maison", level: "moyen" },
+      { en: "garden", fr: "jardin", theme: "maison", level: "moyen" },
+      { en: "cute", fr: "mignon", theme: "mix", level: "facile" },
+      { en: "evening", fr: "soirée", theme: "mix", level: "moyen" },
+      { en: "water", fr: "eau", theme: "mix", level: "facile" },
+      { en: "sun", fr: "soleil", theme: "mix", level: "facile" },
+      { en: "moon", fr: "lune", theme: "mix", level: "moyen" },
+      { en: "friend", fr: "ami", theme: "mix", level: "facile" },
+      { en: "family", fr: "famille", theme: "mix", level: "moyen" },
+      { en: "football", fr: "football", theme: "mix", level: "facile" },
+      { en: "car", fr: "voiture", theme: "mix", level: "facile" },
+      { en: "green", fr: "vert", theme: "mix", level: "facile" },
+      { en: "blue", fr: "bleu", theme: "mix", level: "facile" },
+      { en: "red", fr: "rouge", theme: "mix", level: "facile" }
+    ];
+
+    const ROADMAP = [
+      { id: "m1", title: "Série 1 — Départ facile", theme: "mix", level: "facile", count: 3 },
+      { id: "m2", title: "Série 2 — Animaux", theme: "animaux", level: "facile", count: 3 },
+      { id: "m3", title: "Série 3 — École", theme: "ecole", level: "facile", count: 5 },
+      { id: "m4", title: "Série 4 — Maison", theme: "maison", level: "facile", count: 5 },
+      { id: "m5", title: "Série 5 — Animaux +", theme: "animaux", level: "moyen", count: 5 },
+      { id: "m6", title: "Série 6 — Mots moyens", theme: "mix", level: "moyen", count: 10 },
+      { id: "m7", title: "Série 7 — École +", theme: "ecole", level: "moyen", count: 10 },
+      { id: "m8", title: "Série 8 — Grand mélange", theme: "all", level: "all", count: 10 }
     ];
 
     const state = {
       profile: "Yvane",
-      count: 3,
-      theme: "mix",
+      selectedMissionId: null,
+      currentMission: null,
       questions: [],
       index: 0,
       score: 0,
@@ -548,45 +491,42 @@
     const progressBar = document.getElementById("progressBar");
     const bestScore = document.getElementById("bestScore");
     const playedCount = document.getElementById("playedCount");
+    const totalStarsTop = document.getElementById("totalStarsTop");
+    const roadmapTotal = document.getElementById("roadmapTotal");
+    const missionList = document.getElementById("missionList");
     const profileLabel = document.getElementById("profileLabel");
     const scoreLabel = document.getElementById("scoreLabel");
+    const missionLabel = document.getElementById("missionLabel");
     const answersBox = document.getElementById("answersBox");
     const feedbackBox = document.getElementById("feedbackBox");
     const wordHelp = document.getElementById("wordHelp");
     const validateBtn = document.getElementById("validateBtn");
     const resultTitle = document.getElementById("resultTitle");
     const resultScore = document.getElementById("resultScore");
+    const resultStars = document.getElementById("resultStars");
     const resultMessage = document.getElementById("resultMessage");
     const installBox = document.getElementById("installBox");
     const installBtn = document.getElementById("installBtn");
+    const startBtn = document.getElementById("startBtn");
 
     document.querySelectorAll("[data-profile]").forEach((button) => {
       button.addEventListener("click", () => {
         selectButton("[data-profile]", button);
         state.profile = button.dataset.profile;
+        state.selectedMissionId = null;
+        startBtn.disabled = true;
+        startBtn.textContent = "CHOISIS UNE SÉRIE";
+        renderRoadmap();
         updateHomeStats();
       });
     });
 
-    document.querySelectorAll("[data-count]").forEach((button) => {
-      button.addEventListener("click", () => {
-        selectButton("[data-count]", button);
-        state.count = Number(button.dataset.count);
-      });
-    });
-
-    document.querySelectorAll("[data-theme]").forEach((button) => {
-      button.addEventListener("click", () => {
-        selectButton("[data-theme]", button);
-        state.theme = button.dataset.theme;
-      });
-    });
-
-    document.getElementById("startBtn").addEventListener("click", startQuiz);
+    startBtn.addEventListener("click", startQuiz);
     document.getElementById("audioBtn").addEventListener("click", speakCurrentWord);
     document.getElementById("cantListenBtn").addEventListener("click", showWrittenWord);
     validateBtn.addEventListener("click", validateOrContinue);
-    document.getElementById("restartBtn").addEventListener("click", goHome);
+    document.getElementById("restartBtn").addEventListener("click", restartSameMission);
+    document.getElementById("roadmapBtn").addEventListener("click", goHome);
     document.getElementById("closeBtn").addEventListener("click", goHome);
     installBtn.addEventListener("click", installApp);
 
@@ -607,6 +547,7 @@
       });
     }
 
+    renderRoadmap();
     updateHomeStats();
 
     function installApp() {
@@ -628,25 +569,99 @@
       screens[name].classList.add("active");
     }
 
-    function shuffle(items) {
-      return [...items].sort(() => Math.random() - 0.5);
+    function shuffle(items) { return [...items].sort(() => Math.random() - 0.5); }
+
+    function roadmapStorageKey() { return "quizAnglaisRoadmap_" + state.profile; }
+    function statsStorageKey() { return "quizAnglaisStats_" + state.profile; }
+
+    function readRoadmap() {
+      try { return JSON.parse(localStorage.getItem(roadmapStorageKey())) || {}; }
+      catch (error) { return {}; }
     }
 
-    function getPool() {
-      if (state.theme === "mix") return WORDS;
-      const themedWords = WORDS.filter((item) => item.theme === state.theme);
-      return themedWords.length >= state.count ? themedWords : WORDS;
+    function saveRoadmap(progress) { localStorage.setItem(roadmapStorageKey(), JSON.stringify(progress)); }
+
+    function readStats() {
+      try { return JSON.parse(localStorage.getItem(statsStorageKey())) || { best: 0, played: 0 }; }
+      catch (error) { return { best: 0, played: 0 }; }
+    }
+
+    function renderRoadmap() {
+      const progress = readRoadmap();
+      const totalStars = ROADMAP.reduce((sum, mission) => sum + (progress[mission.id]?.stars || 0), 0);
+      totalStarsTop.textContent = totalStars;
+      roadmapTotal.textContent = totalStars + "/" + (ROADMAP.length * 3) + " ⭐";
+      missionList.innerHTML = "";
+
+      ROADMAP.forEach((mission, index) => {
+        const previous = index === 0 ? { passed: true } : progress[ROADMAP[index - 1].id];
+        const missionProgress = progress[mission.id] || { stars: 0, passed: false, bestPercent: 0 };
+        const locked = index > 0 && !previous?.passed;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mission-btn" + (locked ? " locked" : "") + (state.selectedMissionId === mission.id ? " selected" : "");
+        button.disabled = locked;
+        button.innerHTML = `
+          <div class="mission-top">
+            <div class="mission-title">${mission.title}</div>
+            <div class="mission-stars">${formatStars(missionProgress.stars)}</div>
+          </div>
+          <div class="mission-info">${mission.count} questions • thème ${themeLabel(mission.theme)} • niveau ${levelLabel(mission.level)}</div>
+          <div class="mission-status">${locked ? "🔒 Bloquée" : missionProgress.passed ? "✅ Validée • meilleur score " + missionProgress.bestPercent + "%" : "À faire • il faut plus de 50%"}</div>
+        `;
+        button.addEventListener("click", () => selectMission(mission));
+        missionList.appendChild(button);
+      });
+    }
+
+    function selectMission(mission) {
+      state.selectedMissionId = mission.id;
+      state.currentMission = mission;
+      startBtn.disabled = false;
+      startBtn.textContent = "COMMENCER LA SÉRIE";
+      renderRoadmap();
+    }
+
+    function themeLabel(theme) {
+      if (theme === "all") return "grand mélange";
+      if (theme === "mix") return "mélange";
+      if (theme === "ecole") return "école";
+      return theme;
+    }
+
+    function levelLabel(level) {
+      if (level === "all") return "complet";
+      return level;
+    }
+
+    function formatStars(count) {
+      return "★".repeat(count) + "☆".repeat(3 - count);
+    }
+
+    function getPool(mission) {
+      if (mission.theme === "all") return WORDS;
+      let pool = WORDS.filter((item) => item.theme === mission.theme || mission.theme === "mix" && item.theme === "mix");
+      if (mission.level !== "all") {
+        const levelPool = pool.filter((item) => item.level === mission.level);
+        if (levelPool.length >= mission.count) pool = levelPool;
+      }
+      return pool.length >= mission.count ? pool : WORDS;
     }
 
     function startQuiz() {
-      const pool = getPool();
-      state.questions = shuffle(pool).slice(0, state.count);
+      const mission = state.currentMission || ROADMAP.find((item) => item.id === state.selectedMissionId);
+      if (!mission) return;
+      const pool = getPool(mission);
+      state.currentMission = mission;
+      state.questions = shuffle(pool).slice(0, mission.count);
       state.index = 0;
       state.score = 0;
       state.selectedAnswer = null;
       state.validated = false;
       profileLabel.textContent = state.profile;
       scoreLabel.textContent = "Score : 0";
+      missionLabel.textContent = mission.title + " — plus de 50% pour valider";
       showScreen("quiz");
       loadQuestion();
     }
@@ -663,10 +678,7 @@
       wordHelp.textContent = "";
       answersBox.innerHTML = "";
 
-      const wrongAnswers = shuffle(WORDS)
-        .filter((item) => item.fr !== current.fr)
-        .slice(0, 3)
-        .map((item) => item.fr);
+      const wrongAnswers = shuffle(WORDS).filter((item) => item.fr !== current.fr).slice(0, 3).map((item) => item.fr);
       const answers = shuffle([current.fr, ...wrongAnswers]);
 
       answers.forEach((answer) => {
@@ -691,17 +703,10 @@
     }
 
     function validateOrContinue() {
-      if (!state.validated) {
-        validateAnswer();
-        return;
-      }
-
+      if (!state.validated) { validateAnswer(); return; }
       state.index += 1;
-      if (state.index >= state.questions.length) {
-        finishQuiz();
-      } else {
-        loadQuestion();
-      }
+      if (state.index >= state.questions.length) finishQuiz();
+      else loadQuestion();
     }
 
     function validateAnswer() {
@@ -732,39 +737,68 @@
       updateProgress();
     }
 
+    function calculateStars(score, total) {
+      const percent = score / total;
+      if (percent === 1) return 3;
+      if (percent >= 0.7) return 2;
+      if (percent > 0.5) return 1;
+      return 0;
+    }
+
     function finishQuiz() {
-      saveStats();
+      const total = state.questions.length;
+      const percent = Math.round((state.score / total) * 100);
+      const stars = calculateStars(state.score, total);
+      const passed = stars >= 1;
+      saveStats(percent);
+      saveMissionProgress(stars, percent, passed);
+      renderRoadmap();
       updateHomeStats();
       progressBar.style.width = "100%";
-      resultScore.textContent = state.score + "/" + state.questions.length;
+      resultScore.textContent = state.score + "/" + total;
+      resultStars.textContent = formatStars(stars);
 
-      const rate = state.score / state.questions.length;
-      if (rate === 1) {
-        resultTitle.textContent = "Excellent";
-        resultMessage.textContent = state.profile + " a réussi toute la série. Série parfaite.";
-      } else if (rate >= 0.7) {
-        resultTitle.textContent = "Très bien";
-        resultMessage.textContent = state.profile + " progresse bien. Il faut continuer régulièrement.";
-      } else if (rate >= 0.4) {
-        resultTitle.textContent = "Pas mal";
-        resultMessage.textContent = "Recommence doucement. L’écoute va devenir plus facile.";
+      if (passed) {
+        resultTitle.textContent = stars === 3 ? "Série parfaite" : "Série validée";
+        resultMessage.innerHTML = `<span class="pass-note">Validé : ${percent}%.</span><br>Tu as fait plus que la moyenne. La suite est débloquée.`;
       } else {
-        resultTitle.textContent = "À refaire";
-        resultMessage.textContent = "Ce n’est pas grave. Recommence avec une série de 3 quiz.";
+        resultTitle.textContent = "Série non validée";
+        resultMessage.innerHTML = `<span class="fail-note">Non validé : ${percent}%.</span><br>Il faut faire plus que 50% pour passer à la série suivante.`;
       }
 
       showScreen("result");
     }
 
-    function getCurrentQuestion() {
-      return state.questions[state.index];
+    function saveMissionProgress(stars, percent, passed) {
+      const progress = readRoadmap();
+      const old = progress[state.currentMission.id] || { stars: 0, bestPercent: 0, passed: false };
+      progress[state.currentMission.id] = {
+        stars: Math.max(old.stars || 0, stars),
+        bestPercent: Math.max(old.bestPercent || 0, percent),
+        passed: old.passed || passed
+      };
+      saveRoadmap(progress);
     }
 
+    function saveStats(percent) {
+      const stats = readStats();
+      stats.best = Math.max(stats.best || 0, percent);
+      stats.played = (stats.played || 0) + 1;
+      localStorage.setItem(statsStorageKey(), JSON.stringify(stats));
+    }
+
+    function updateHomeStats() {
+      const stats = readStats();
+      bestScore.textContent = (stats.best || 0) + "%";
+      playedCount.textContent = stats.played || 0;
+      const totalStars = ROADMAP.reduce((sum, mission) => sum + ((readRoadmap()[mission.id] || {}).stars || 0), 0);
+      totalStarsTop.textContent = totalStars;
+    }
+
+    function getCurrentQuestion() { return state.questions[state.index]; }
+
     function updateProgress() {
-      if (!state.questions.length) {
-        progressBar.style.width = "0%";
-        return;
-      }
+      if (!state.questions.length) { progressBar.style.width = "0%"; return; }
       const completed = state.validated ? state.index + 1 : state.index;
       progressBar.style.width = ((completed / state.questions.length) * 100) + "%";
     }
@@ -792,35 +826,15 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    function storageKey() {
-      return "quizAnglaisStats_" + state.profile;
-    }
-
-    function readStats() {
-      try {
-        return JSON.parse(localStorage.getItem(storageKey())) || { best: 0, played: 0 };
-      } catch (error) {
-        return { best: 0, played: 0 };
-      }
-    }
-
-    function saveStats() {
-      const stats = readStats();
-      const percent = Math.round((state.score / state.questions.length) * 100);
-      stats.best = Math.max(stats.best || 0, percent);
-      stats.played = (stats.played || 0) + 1;
-      localStorage.setItem(storageKey(), JSON.stringify(stats));
-    }
-
-    function updateHomeStats() {
-      const stats = readStats();
-      bestScore.textContent = (stats.best || 0) + "%";
-      playedCount.textContent = stats.played || 0;
+    function restartSameMission() {
+      showScreen("home");
+      startQuiz();
     }
 
     function goHome() {
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       progressBar.style.width = "0%";
+      renderRoadmap();
       showScreen("home");
     }
   </script>
