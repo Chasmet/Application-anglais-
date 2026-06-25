@@ -12,11 +12,15 @@ Application mobile simple pour apprendre l’anglais avec des quiz de 3, 5, 10 o
 - Thèmes : mélange, animaux, école, maison
 - Score final
 - Meilleur score sauvegardé sur le téléphone
+- Installation possible sur l’écran d’accueil Android
 - Fonctionne sans serveur, sans API et sans compte
 
 ## Fichiers
 
 - `index.html` : contient toute l’application, le style et le JavaScript.
+- `manifest.webmanifest` : permet l’installation comme application mobile.
+- `icon.svg` : icône de l’application.
+- `sw.js` : service worker pour rendre l’application installable et ouvrir plus vite.
 
 ## Déploiement GitHub Pages
 
@@ -33,6 +37,14 @@ L’application sera disponible à cette adresse :
 ```text
 https://chasmet.github.io/Application-anglais-/
 ```
+
+## Installation sur Android
+
+1. Ouvre le lien dans Chrome.
+2. Attends que la page charge.
+3. Si le bouton `INSTALLER L’APPLICATION` apparaît, appuie dessus.
+4. Sinon, appuie sur les trois points en haut à droite de Chrome.
+5. Appuie sur `Ajouter à l’écran d’accueil` ou `Installer l’application`.
 
 ## Limites V1
 
