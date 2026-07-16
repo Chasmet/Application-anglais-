@@ -1,0 +1,48 @@
+name: Construire APK Android
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'index.html'
+      - 'words.js'
+      - 'lessons.js'
+      - 'icon.svg'
+      - 'android/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Construire l APK
+        working-directory: android
+        run: gradle --no-daemon clean assembleDebug
+
+      - name: Publier l APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quiz-Anglais-Plus-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
