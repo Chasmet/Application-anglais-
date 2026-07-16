@@ -1,49 +1,5 @@
-const CACHE_NAME = "quiz-anglais-v5";
-const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./words.js",
-  "./manifest.webmanifest",
-  "./icon.svg"
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
-  );
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-
-  if (request.mode === "navigate" || request.url.endsWith("index.html")) {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse.clone()));
-          return networkResponse;
-        })
-        .catch(() => caches.match(request).then((cachedResponse) => cachedResponse || caches.match("./index.html")))
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      return cachedResponse || fetch(request).then((networkResponse) => {
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse.clone()));
-        return networkResponse;
-      });
-    })
-  );
-});
+const CACHE_NAME='quiz-anglais-v6';
+const FILES=['./','./index.html','./words.js','./lessons.js','./manifest.webmanifest','./icon.svg'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(FILES)));self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE_NAME).then(c=>c.put('./index.html',copy));return r}).catch(()=>caches.match('./index.html')));return}e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE_NAME).then(cache=>cache.put(e.request,copy));return r}))) });
