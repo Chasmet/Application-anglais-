@@ -10,6 +10,15 @@ on:
       - 'icon.svg'
       - 'android/**'
       - '.github/workflows/build-apk.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'index.html'
+      - 'words.js'
+      - 'lessons.js'
+      - 'icon.svg'
+      - 'android/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 permissions:
