@@ -5,18 +5,30 @@ on:
     branches: [ main ]
     paths:
       - 'index.html'
-      - 'words.js'
+      - 'style.css'
+      - 'app.js'
+      - 'words*.js'
       - 'lessons.js'
+      - 'phrases-extra.js'
+      - 'activities-extra.js'
       - 'icon.svg'
+      - 'manifest.webmanifest'
+      - 'sw.js'
       - 'android/**'
       - '.github/workflows/build-apk.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'index.html'
-      - 'words.js'
+      - 'style.css'
+      - 'app.js'
+      - 'words*.js'
       - 'lessons.js'
+      - 'phrases-extra.js'
+      - 'activities-extra.js'
       - 'icon.svg'
+      - 'manifest.webmanifest'
+      - 'sw.js'
       - 'android/**'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
@@ -45,6 +57,17 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
+      - name: Vérifier les fichiers JavaScript
+        run: |
+          node --check app.js
+          node --check words.js
+          node --check words-debutant.js
+          node --check words-moyen.js
+          node --check words-confirme.js
+          node --check lessons.js
+          node --check phrases-extra.js
+          node --check activities-extra.js
+
       - name: Construire l APK
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
@@ -52,6 +75,6 @@ jobs:
       - name: Publier l APK
         uses: actions/upload-artifact@v4
         with:
-          name: Quiz-Anglais-Plus-APK
+          name: Quiz-Anglais-Plus-v3-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
