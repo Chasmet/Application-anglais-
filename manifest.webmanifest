@@ -1,14 +1,14 @@
 {
-  "name":"Quiz Anglais+",
+  "name":"Quiz Anglais+ 3",
   "short_name":"Anglais+",
-  "description":"Quiz audio anglais-français avec paires, phrases et roadmap.",
+  "description":"Application complète anglais-français avec niveaux Débutant, Moyen et Confirmé, quiz audio, phrases, dialogues et grammaire.",
   "lang":"fr",
   "start_url":"./index.html",
   "scope":"./",
   "display":"standalone",
   "orientation":"portrait",
-  "background_color":"#0c2424",
-  "theme_color":"#0c2424",
+  "background_color":"#0b2424",
+  "theme_color":"#0b2424",
   "categories":["education","kids","language"],
   "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
