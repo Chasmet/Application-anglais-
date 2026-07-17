@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 6
-        versionName '2.0.0'
+        versionCode 7
+        versionName '3.0.0'
     }
 
     buildTypes {
@@ -30,7 +30,10 @@ android {
 def webRoot = rootProject.projectDir.parentFile
 tasks.register('syncWebAssets', Copy) {
     from(webRoot) {
-        include 'index.html', 'words.js', 'lessons.js', 'icon.svg', 'manifest.webmanifest', 'sw.js'
+        include 'index.html', 'style.css', 'app.js',
+                'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
+                'lessons.js', 'phrases-extra.js', 'activities-extra.js',
+                'icon.svg', 'manifest.webmanifest', 'sw.js'
     }
     into "$projectDir/src/main/assets"
 }
