@@ -3,58 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0c2424" />
+  <meta name="theme-color" content="#0b2424" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <title>Quiz Anglais+</title>
-  <style>
-    :root{
-      --bg:#0c2424;--card:#133131;--card2:#173b3b;--border:#36545e;--text:#f5f9f9;
-      --muted:#9ab0b5;--green:#8df000;--green2:#59a900;--blue:#3dbbff;--cyan:#20e3e3;
-      --red:#ff5f67;--yellow:#ffd54a;--pink:#ff75cd;--shadow:rgba(0,0,0,.28)
-    }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#184545 0%,var(--bg) 46%);color:var(--text);font-family:Arial,Helvetica,sans-serif;display:flex;justify-content:center}
-    button{font:inherit}.app{width:100%;max-width:560px;min-height:100vh;padding:calc(16px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
-    .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}.top button{border:0;background:transparent;color:#71878d;font-size:40px;line-height:1}.bar{flex:1;height:16px;border-radius:99px;background:#344c54;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#258cff);border-radius:99px;transition:.25s}.topStat{font-weight:1000;white-space:nowrap;color:var(--pink);font-size:19px}
-    .screen{display:none;flex:1;flex-direction:column}.screen.active{display:flex}h1{font-size:clamp(30px,7vw,40px);line-height:1.08;margin:0 0 14px}h2{font-size:22px;margin:20px 0 10px}p{color:var(--muted);font-size:16px;line-height:1.45;margin:0 0 12px}
-    .card{background:rgba(19,49,49,.92);border:3px solid var(--border);border-radius:24px;padding:16px;box-shadow:0 6px 0 #223d43;margin-bottom:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#0e2929;border:2px solid #29464e;border-radius:18px;padding:12px;text-align:center}.stat strong{display:block;font-size:22px;color:var(--green)}.stat span{font-size:12px;color:var(--muted);font-weight:800}
-    .btn,.choice,.mission,.answer,.token,.pairBtn,.audioBtn,.ghost{border:3px solid var(--border);border-radius:20px;background:var(--card);color:var(--text);cursor:pointer}.btn{min-height:66px;padding:12px;font-size:19px;font-weight:1000;box-shadow:0 5px 0 #263f46}.btn.primary{border:0;background:linear-gradient(#aaff38,var(--green));color:#173200;box-shadow:0 7px 0 var(--green2);width:100%}.btn:disabled{opacity:.45;box-shadow:none}.choice{min-height:64px;padding:10px;font-weight:900}.choice.selected{border-color:var(--green);background:#1b4423;color:#e8ffd8}.quick{margin-top:12px}.quick .btn{font-size:17px}
-    .roadHead{display:flex;justify-content:space-between;align-items:center;gap:10px}.stars{color:var(--yellow);font-weight:1000}.missions{display:grid;gap:11px}.mission{width:100%;padding:14px;text-align:left;box-shadow:0 4px 0 #263f46}.mission.locked{opacity:.42;filter:grayscale(.6)}.mission.selected{border-color:var(--green);background:#1b3f23}.missionTop{display:flex;justify-content:space-between;gap:8px}.missionTitle{font-size:18px;font-weight:1000}.missionMeta{color:var(--muted);font-size:13px;font-weight:800;margin-top:5px}.missionState{font-size:13px;font-weight:1000;color:var(--green);margin-top:7px}.finishBox{display:none;border:3px solid var(--yellow);background:#302a11;border-radius:22px;padding:14px;margin-top:12px}.finishBox.show{display:block}.finishBox p{color:#fff0a4;font-weight:800}
-    .quizHead{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-weight:900;margin-bottom:6px}.hearts{color:#ff7180}.instruction{font-size:31px;font-weight:1000;line-height:1.12;margin:6px 0 8px}.sub{color:var(--muted);font-size:15px;font-weight:800;margin-bottom:12px}
-    .audioPanel{min-height:116px;border:3px solid var(--border);border-radius:24px;background:#123030;display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0 16px;box-shadow:0 6px 0 #233e45}.audioMain{border:0;background:transparent;color:var(--blue);font-size:44px}.audioSlow{border:2px solid #35616a;background:#0d2929;color:var(--cyan);border-radius:16px;padding:10px 12px;font-weight:1000}.wave{font-size:26px;color:var(--blue);letter-spacing:2px}
-    .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{min-height:82px;padding:10px;font-size:18px;font-weight:1000;box-shadow:0 5px 0 #263f46}.answer.selected{border-color:var(--blue);background:#173b4d}.answer.correct{border-color:var(--green);background:#194824;color:#e6ffd6}.answer.wrong{border-color:var(--red);background:#4b1e22;color:#ffd8da}.answer.locked{pointer-events:none}
-    .pairGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pairBtn{min-height:68px;padding:10px;font-size:17px;box-shadow:0 4px 0 #263f46}.pairBtn.active{border-color:var(--blue);background:#183d4d}.pairBtn.matched{border-color:var(--green);background:#183f22;color:#dfffca;opacity:.72}.pairBtn.bad{border-color:var(--red);animation:shake .22s}.pairBtn.locked{pointer-events:none}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-    .sentenceBox{min-height:92px;border-bottom:3px solid var(--border);padding:10px 4px;display:flex;align-content:flex-start;flex-wrap:wrap;gap:9px;margin:8px 0 18px}.tokenBank{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}.token{padding:12px 15px;font-size:17px;box-shadow:0 4px 0 #263f46}.token.used{opacity:.28;pointer-events:none}.token.placed{border-color:var(--blue);background:#183d4d}
-    .promptCard{border:3px solid #35616a;background:#102e2e;border-radius:22px;padding:18px;text-align:center;margin:10px 0 16px;font-size:25px;font-weight:1000;color:#f7ffff}
-    .feedback{display:none;border-radius:20px;padding:13px;text-align:center;font-size:18px;font-weight:1000;margin:14px 0 8px}.feedback.show{display:block}.feedback.good{border:3px solid var(--green);background:#194824;color:#eaffdc}.feedback.bad{border:3px solid var(--red);background:#4b1e22;color:#ffe0e2}
-    .reveal{display:none;border:3px solid var(--yellow);background:#332c12;border-radius:20px;padding:13px;text-align:center;margin:10px 0}.reveal.show{display:block}.reveal small{display:block;text-transform:uppercase;letter-spacing:1px;color:#ffe989;font-weight:900}.reveal strong{display:block;font-size:27px;margin:4px 0}.reveal span{color:#fff0ad;font-weight:800}
-    .bottom{margin-top:auto;padding-top:15px}.ghost{width:100%;min-height:54px;background:transparent;color:var(--muted);font-weight:1000;margin-bottom:12px}.result{text-align:center}.scoreBig{font-size:62px;color:var(--green);font-weight:1000}.starBig{font-size:42px;color:var(--yellow);letter-spacing:3px}.badge{display:inline-block;background:#1b4423;border:2px solid var(--green);border-radius:99px;padding:8px 14px;color:#e8ffd8;font-weight:1000;margin-top:8px}.install{display:none;margin-top:12px}.install.show{display:block}
-    @media(max-width:390px){.app{padding-left:14px;padding-right:14px}.answer{font-size:17px;min-height:76px}.instruction{font-size:28px}.stats{gap:7px}.stat{padding:10px 5px}.missionTitle{font-size:16px}}
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <title>Quiz Anglais+ 3</title>
 </head>
 <body>
 <main class="app">
   <header class="top"><button id="backBtn" aria-label="Retour">×</button><div class="bar"><div class="fill" id="progress"></div></div><div class="topStat">⚡ <span id="xpTop">0</span></div></header>
 
   <section class="screen active" id="home">
-    <h1>Quiz Anglais+</h1>
+    <h1>Quiz Anglais+ 3</h1>
     <div class="card">
-      <p id="homeIntro">Écoute, lis, associe et construis des phrases.</p>
-      <div class="stats"><div class="stat"><strong id="best">0%</strong><span>meilleur score</span></div><div class="stat"><strong id="streak">0</strong><span>jours de suite</span></div><div class="stat"><strong id="reviewCount">0</strong><span>à réviser</span></div></div>
+      <p id="homeIntro">Écoute, lis, associe, réponds et construis des phrases.</p>
+      <div class="stats"><div class="stat"><strong id="best">0%</strong><span>meilleur</span></div><div class="stat"><strong id="streak">0</strong><span>jours</span></div><div class="stat"><strong id="mastered">0</strong><span>maîtrisés</span></div><div class="stat"><strong id="reviewCount">0</strong><span>à réviser</span></div></div>
+      <div class="contentLine"><span>Contenu du niveau</span><strong id="contentCount">0 éléments</strong></div>
       <button class="btn primary install" id="installBtn">INSTALLER L’APPLICATION</button>
     </div>
 
     <h2>Profil</h2>
     <div class="grid2"><button class="choice selected" data-profile="Yvane">Yvane</button><button class="choice" data-profile="Nelvyn">Nelvyn</button></div>
 
-    <h2>Entraînement rapide</h2>
-    <div class="grid2 quick"><button class="btn" data-quick="3">3 questions</button><button class="btn" data-quick="5">5 questions</button><button class="btn" data-quick="10">10 questions</button><button class="btn" id="reviewBtn">Réviser mes erreurs</button></div>
+    <h2>Niveau</h2>
+    <div class="levels"><button class="levelBtn selected" data-level="debutant">🌱 Débutant<span>A1</span></button><button class="levelBtn" data-level="moyen">🚀 Moyen<span>A2–B1</span></button><button class="levelBtn" data-level="confirme">🏆 Confirmé<span>B1–B2</span></button></div>
 
-    <div class="card" style="margin-top:18px">
-      <div class="roadHead"><h2 style="margin:0">Roadmap</h2><div class="stars" id="roadStars">0/30 ⭐</div></div>
+    <h2>Entraînement rapide</h2>
+    <div class="grid2"><button class="btn" data-quick="5">⚡ 5 questions</button><button class="btn" data-quick="10">🔥 10 questions</button><button class="btn" id="dailyBtn">📅 Défi du jour</button><button class="btn" id="reviewBtn">🧠 Réviser mes erreurs</button><button class="btn" id="placementBtn">🎯 Test de niveau</button><button class="btn" id="grammarBtn">📝 Grammaire</button></div>
+
+    <h2>Thèmes rapides</h2>
+    <div class="themes" id="themes"></div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="roadHead"><h2 style="margin:0" id="roadTitle">Roadmap Débutant</h2><div class="stars" id="roadStars">0/30 ⭐</div></div>
       <p>Chaque série mélange plusieurs exercices. Plus de 50% pour débloquer la suite.</p>
       <div class="missions" id="missions"></div>
       <div class="finishBox" id="finishBox"><p>Roadmap terminée. Crée un nouveau parcours avec d’autres questions.</p><button class="btn primary" id="finishRoadmap">TERMINER LA ROADMAP</button></div>
@@ -69,128 +52,22 @@
     <div id="exercise"></div>
     <div class="feedback" id="feedback"></div>
     <div class="reveal" id="reveal"></div>
-    <div class="bottom"><button class="ghost" id="skipAudio">Afficher un indice</button><button class="btn primary" id="validate" disabled>VALIDER</button></div>
+    <div class="bottom"><button class="ghost" id="hintBtn">AFFICHER UN INDICE</button><button class="btn primary" id="validate" disabled>VALIDER</button></div>
   </section>
 
   <section class="screen" id="result">
     <h1>Résultat</h1>
     <div class="card result"><h2 id="resultTitle">Bien joué</h2><div class="scoreBig" id="resultScore">0/0</div><div class="starBig" id="resultStars">☆☆☆</div><p id="resultText"></p><div class="badge" id="resultBadge">+0 XP</div></div>
-    <div class="bottom"><button class="ghost" id="goRoadmap">VOIR LA ROADMAP</button><button class="btn primary" id="retry">RECOMMENCER</button></div>
+    <div class="bottom"><button class="ghost" id="goRoadmap">RETOUR À L’ACCUEIL</button><button class="btn primary" id="retry">RECOMMENCER</button></div>
   </section>
 </main>
 <script src="words.js"></script>
+<script src="words-debutant.js"></script>
+<script src="words-moyen.js"></script>
+<script src="words-confirme.js"></script>
 <script src="lessons.js"></script>
-<script>
-(() => {
-  const FALLBACK=[{en:'hello',fr:'bonjour',theme:'mix',level:'facile'},{en:'cat',fr:'chat',theme:'animaux',level:'facile'},{en:'school',fr:'école',theme:'ecole',level:'facile'},{en:'house',fr:'maison',theme:'maison',level:'facile'}];
-  const WORDS=Array.isArray(window.QUIZ_WORDS)&&window.QUIZ_WORDS.length>20?window.QUIZ_WORDS:FALLBACK;
-  const PHRASES=Array.isArray(window.QUIZ_PHRASES)?window.QUIZ_PHRASES:[];
-  const ROADMAP=[
-    {id:'m1',title:'Départ facile',count:3,modes:['audio'],theme:'mix',level:'facile'},
-    {id:'m2',title:'Animaux',count:5,modes:['audio','reverse'],theme:'animaux',level:'facile'},
-    {id:'m3',title:'Paires rapides',count:3,modes:['pairs'],theme:'mix',level:'facile'},
-    {id:'m4',title:'École',count:5,modes:['audio','reverse','pairs'],theme:'ecole',level:'facile'},
-    {id:'m5',title:'Construis la phrase',count:5,modes:['sentence'],theme:'mix',level:'facile'},
-    {id:'m6',title:'Maison',count:8,modes:['audio','pairs','reverse'],theme:'maison',level:'moyen'},
-    {id:'m7',title:'Phrases du quotidien',count:8,modes:['sentence','audio'],theme:'mix',level:'moyen'},
-    {id:'m8',title:'Défi mixte',count:10,modes:['audio','reverse','pairs','sentence'],theme:'all',level:'all'},
-    {id:'m9',title:'Révision intelligente',count:10,modes:['review','audio','reverse'],theme:'all',level:'all'},
-    {id:'m10',title:'Champion anglais',count:10,modes:['audio','reverse','pairs','sentence'],theme:'all',level:'all'}
-  ];
-  const $=id=>document.getElementById(id);
-  const screens={home:$('home'),quiz:$('quiz'),result:$('result')};
-  const state={profile:'Yvane',mission:null,rounds:[],index:0,score:0,hearts:3,xpEarned:0,validated:false,selected:null,pairFirst:null,pairMistakes:0,sentenceTokens:[],answerTokens:[],quick:false,installPrompt:null};
-
-  function key(name){return `qa_${name}_${state.profile}`}
-  function read(name,def){try{return JSON.parse(localStorage.getItem(key(name)))??def}catch{return def}}
-  function write(name,val){localStorage.setItem(key(name),JSON.stringify(val))}
-  function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-  function sample(a,n){return shuffle(a).slice(0,Math.min(n,a.length))}
-  function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
-  function starsText(n){return '★'.repeat(n)+'☆'.repeat(3-n)}
-  function speak(text,rate=.82){
-    if(window.AndroidTTS&&typeof window.AndroidTTS.speak==='function'){window.AndroidTTS.speak(String(text),Number(rate));return}
-    if(!('speechSynthesis' in window))return;
-    const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=rate;u.pitch=1;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)
-  }
-  function wordPool(theme='all',level='all'){
-    let p=WORDS.filter(w=>(theme==='all'||w.theme===theme||theme==='mix'&&w.theme==='mix')&&(level==='all'||w.level===level));
-    return p.length>=8?p:WORDS
-  }
-  function phrasePool(level='all'){const p=PHRASES.filter(x=>level==='all'||x.level===level);return p.length?p:PHRASES}
-  function idFor(item,type){return `${type}:${item.en}`}
-
-  function profileData(){return {stats:read('stats',{best:0,played:0,xp:0,streak:0,lastDay:''}),road:read('road',{}),mistakes:read('mistakes',[])}}
-  function saveMistake(item,type){const list=read('mistakes',[]);const id=idFor(item,type);if(!list.some(x=>x.id===id)){list.push({id,type,item});write('mistakes',list.slice(-120))}}
-  function removeMistake(item,type){const id=idFor(item,type);write('mistakes',read('mistakes',[]).filter(x=>x.id!==id))}
-  function updateStreak(){const s=read('stats',{best:0,played:0,xp:0,streak:0,lastDay:''});const today=new Date().toISOString().slice(0,10);if(s.lastDay!==today){const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);s.streak=s.lastDay===yesterday?(s.streak||0)+1:1;s.lastDay=today;write('stats',s)}}
-
-  function renderHome(){
-    const d=profileData(),cycle=Number(localStorage.getItem(key('cycle'))||1),total=ROADMAP.reduce((n,m)=>n+(d.road[m.id]?.stars||0),0),complete=ROADMAP.every(m=>d.road[m.id]?.passed);
-    $('homeIntro').textContent=`Parcours ${cycle} • ${WORDS.length} mots • ${PHRASES.length} phrases`;
-    $('best').textContent=(d.stats.best||0)+'%';$('streak').textContent=d.stats.streak||0;$('reviewCount').textContent=d.mistakes.length;$('xpTop').textContent=d.stats.xp||0;$('roadStars').textContent=`${total}/${ROADMAP.length*3} ⭐`;$('reviewBtn').disabled=!d.mistakes.length;
-    $('missions').innerHTML='';
-    ROADMAP.forEach((m,i)=>{const prev=i===0?{passed:true}:d.road[ROADMAP[i-1].id],p=d.road[m.id]||{stars:0,passed:false,best:0},locked=i>0&&!prev?.passed,b=document.createElement('button');b.className='mission'+(locked?' locked':'')+(state.mission?.id===m.id?' selected':'');b.disabled=locked||complete;b.innerHTML=`<div class="missionTop"><div class="missionTitle">Série ${i+1} — ${m.title}</div><div class="stars">${starsText(p.stars||0)}</div></div><div class="missionMeta">${m.count} activités • ${m.modes.map(modeLabel).join(' • ')}</div><div class="missionState">${locked?'🔒 Bloquée':p.passed?`✅ Validée • ${p.best}%`:'À faire • plus de 50%'}</div>`;b.onclick=()=>{state.mission=m;state.quick=false;$('startMission').disabled=false;$('startMission').textContent='COMMENCER LA SÉRIE';renderHome()};$('missions').appendChild(b)});
-    $('finishBox').classList.toggle('show',complete);if(complete){$('startMission').disabled=true;$('startMission').textContent='ROADMAP TERMINÉE'}
-  }
-  function modeLabel(m){return({audio:'écoute',reverse:'traduction',pairs:'paires',sentence:'phrase',review:'révision'})[m]||m}
-
-  function makeRounds(mission,countOverride){
-    const count=countOverride||mission.count,rounds=[],wp=shuffle(wordPool(mission.theme,mission.level)),pp=shuffle(phrasePool(mission.level));
-    for(let i=0;i<count;i++){
-      let type=mission.modes[i%mission.modes.length];
-      if(type==='review'){const mistakes=read('mistakes',[]);if(mistakes.length){const x=mistakes[i%mistakes.length];rounds.push({type:x.type==='sentence'?'sentence':'audio',item:x.item,review:true});continue}type='audio'}
-      if(type==='pairs'){rounds.push({type,item:sample(wp,4)});continue}
-      if(type==='sentence'){rounds.push({type,item:pp[i%Math.max(pp.length,1)]||{en:'I like football',fr:"J'aime le football",level:'facile'}});continue}
-      rounds.push({type,item:wp[i%wp.length]})
-    }
-    return rounds
-  }
-
-  function startSession(mission,countOverride){state.mission=mission;state.rounds=makeRounds(mission,countOverride);state.index=0;state.score=0;state.hearts=3;state.xpEarned=0;state.validated=false;show('quiz');renderRound()}
-  function current(){return state.rounds[state.index]}
-  function renderRound(){
-    state.validated=false;state.selected=null;state.pairFirst=null;state.pairMistakes=0;state.answerTokens=[];$('feedback').className='feedback';$('reveal').className='reveal';$('validate').disabled=true;$('validate').textContent='VALIDER';$('profileLabel').textContent=state.profile;$('scoreLabel').textContent=`${state.score}/${state.rounds.length}`;$('hearts').textContent='❤'.repeat(state.hearts)+'♡'.repeat(3-state.hearts);$('progress').style.width=(state.index/state.rounds.length*100)+'%';$('questionMeta').textContent=`Question ${state.index+1} sur ${state.rounds.length} • ${modeLabel(current().type)}`;
-    const q=current();
-    if(q.type==='audio')renderAudio(q.item);else if(q.type==='reverse')renderReverse(q.item);else if(q.type==='pairs')renderPairs(q.item);else renderSentence(q.item)
-  }
-  function audioPanel(text){return `<div class="audioPanel"><button class="audioMain" id="speakNormal">🔊</button><span class="wave">▁▂▃▄▅▆▅▄▃▂▁</span><button class="audioSlow" id="speakSlow">🐢 Lent</button></div>`}
-  function bindAudio(text){$('speakNormal').onclick=()=>speak(text,.82);$('speakSlow').onclick=()=>speak(text,.55);setTimeout(()=>speak(text,.82),250)}
-  function renderAudio(item){$('instruction').textContent='Appuie sur ce que tu entends';const wrong=sample(WORDS.filter(w=>w.fr!==item.fr),3).map(w=>w.fr),opts=shuffle([item.fr,...wrong]);$('exercise').innerHTML=audioPanel(item.en)+`<div class="answers">${opts.map(x=>`<button class="answer">${escapeHtml(x)}</button>`).join('')}</div>`;bindAudio(item.en);bindAnswers(item.fr)}
-  function renderReverse(item){$('instruction').textContent='Trouve le mot anglais';const wrong=sample(WORDS.filter(w=>w.en!==item.en),3).map(w=>w.en),opts=shuffle([item.en,...wrong]);$('exercise').innerHTML=`<div class="promptCard">${escapeHtml(item.fr)}</div><div class="answers">${opts.map(x=>`<button class="answer">${escapeHtml(x)}</button>`).join('')}</div>`;bindAnswers(item.en)}
-  function bindAnswers(correct){document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(state.validated)return;document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');state.selected=b.textContent;$('validate').disabled=false;$('validate').dataset.correct=correct})}
-
-  function renderPairs(items){$('instruction').textContent='Appuie sur les paires';const cards=[];items.forEach((w,i)=>{cards.push({side:'en',pair:i,text:w.en},{side:'fr',pair:i,text:w.fr})});$('exercise').innerHTML=`<div class="pairGrid">${shuffle(cards).map(c=>`<button class="pairBtn" data-pair="${c.pair}" data-side="${c.side}">${escapeHtml(c.text)}</button>`).join('')}</div>`;document.querySelectorAll('.pairBtn').forEach(b=>b.onclick=()=>pairClick(b));$('validate').textContent='TERMINE LES PAIRES'}
-  function pairClick(btn){if(btn.classList.contains('matched'))return;if(!state.pairFirst){state.pairFirst=btn;btn.classList.add('active');return}const first=state.pairFirst;if(first===btn)return;const ok=first.dataset.pair===btn.dataset.pair&&first.dataset.side!==btn.dataset.side;if(ok){first.classList.remove('active');first.classList.add('matched');btn.classList.add('matched');state.pairFirst=null;if(document.querySelectorAll('.pairBtn.matched').length===document.querySelectorAll('.pairBtn').length){$('validate').disabled=false;$('validate').textContent='VALIDER LES PAIRES'}}else{state.pairMistakes++;first.classList.add('bad');btn.classList.add('bad');setTimeout(()=>{first.classList.remove('active','bad');btn.classList.remove('bad')},300);state.pairFirst=null}}
-
-  function renderSentence(item){$('instruction').textContent='Construis la phrase entendue';const tokens=item.en.replace(/[?!.]/g,'').split(/\s+/);state.sentenceTokens=shuffle(tokens.map((t,i)=>({id:i,text:t,used:false})));$('exercise').innerHTML=audioPanel(item.en)+`<div class="sentenceBox" id="sentenceBox"></div><div class="tokenBank" id="tokenBank"></div>`;bindAudio(item.en);renderTokens();$('validate').textContent='VALIDER LA PHRASE'}
-  function renderTokens(){const box=$('sentenceBox'),bank=$('tokenBank');box.innerHTML=state.answerTokens.map((t,i)=>`<button class="token placed" data-answer="${i}">${escapeHtml(t.text)}</button>`).join('');bank.innerHTML=state.sentenceTokens.map((t,i)=>`<button class="token ${t.used?'used':''}" data-token="${i}">${escapeHtml(t.text)}</button>`).join('');box.querySelectorAll('.token').forEach(b=>b.onclick=()=>{const t=state.answerTokens.splice(Number(b.dataset.answer),1)[0];const original=state.sentenceTokens.find(x=>x.id===t.id);if(original)original.used=false;renderTokens()});bank.querySelectorAll('.token').forEach(b=>b.onclick=()=>{const t=state.sentenceTokens[Number(b.dataset.token)];if(t.used)return;t.used=true;state.answerTokens.push({...t});renderTokens()});$('validate').disabled=!state.answerTokens.length}
-
-  function validateRound(){
-    if(state.validated){nextRound();return}
-    const q=current();let ok=false;
-    if(q.type==='audio'||q.type==='reverse'){const correct=$('validate').dataset.correct;ok=state.selected===correct;document.querySelectorAll('.answer').forEach(b=>{b.classList.add('locked');if(b.textContent===correct)b.classList.add('correct');if(b.classList.contains('selected')&&!ok)b.classList.add('wrong')})}
-    else if(q.type==='pairs'){ok=state.pairMistakes<=1;document.querySelectorAll('.pairBtn').forEach(b=>b.classList.add('locked'))}
-    else{const answer=state.answerTokens.map(t=>t.text).join(' ').toLowerCase();const correct=q.item.en.replace(/[?!.]/g,'').toLowerCase();ok=answer===correct;document.querySelectorAll('.token').forEach(b=>b.classList.add('locked'))}
-    state.validated=true;if(ok){state.score++;state.xpEarned+=10;$('feedback').textContent='Bonne réponse !';$('feedback').className='feedback show good';removeMistake(q.item,q.type);speak('Good job',.85)}else{state.hearts=Math.max(0,state.hearts-1);$('feedback').textContent='À revoir. Regarde la bonne réponse.';$('feedback').className='feedback show bad';saveMistake(q.item,q.type);speak('Try again',.85)}
-    showReveal(q);$('scoreLabel').textContent=`${state.score}/${state.rounds.length}`;$('hearts').textContent='❤'.repeat(state.hearts)+'♡'.repeat(3-state.hearts);$('validate').textContent='CONTINUER';$('validate').disabled=false;$('progress').style.width=((state.index+1)/state.rounds.length*100)+'%'
-  }
-  function showReveal(q){let en='',fr='';if(q.type==='pairs'){en='Paires terminées';fr='Anglais ↔ Français'}else{en=q.item.en;fr=q.item.fr}$('reveal').innerHTML=`<small>Réponse anglaise</small><strong>${escapeHtml(en)}</strong><span>${escapeHtml(fr)}</span>`;$('reveal').className='reveal show'}
-  function nextRound(){state.index++;if(state.index>=state.rounds.length){finishSession();return}renderRound()}
-  function finishSession(){const total=state.rounds.length,percent=Math.round(state.score/total*100),starCount=percent===100?3:percent>=70?2:percent>50?1:0,passed=starCount>0;updateStreak();const stats=read('stats',{best:0,played:0,xp:0,streak:0,lastDay:''});stats.best=Math.max(stats.best||0,percent);stats.played=(stats.played||0)+1;stats.xp=(stats.xp||0)+state.xpEarned;write('stats',stats);if(!state.quick&&state.mission?.id){const road=read('road',{}),old=road[state.mission.id]||{stars:0,best:0,passed:false};road[state.mission.id]={stars:Math.max(old.stars||0,starCount),best:Math.max(old.best||0,percent),passed:old.passed||passed};write('road',road)}$('resultTitle').textContent=passed?'Série validée':'Série à refaire';$('resultScore').textContent=`${state.score}/${total}`;$('resultStars').textContent=starsText(starCount);$('resultText').textContent=passed?`Bravo, ${percent}%. La suite est débloquée.`:`${percent}%. Il faut faire plus de 50% pour valider.`;$('resultBadge').textContent=`+${state.xpEarned} XP`;show('result');$('progress').style.width='100%';renderHome()}
-
-  function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-  function goHome(){if('speechSynthesis'in window)window.speechSynthesis.cancel();$('progress').style.width='0%';show('home');renderHome()}
-
-  document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-profile]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');state.profile=b.dataset.profile;state.mission=null;$('startMission').disabled=true;$('startMission').textContent='CHOISIS UNE SÉRIE';renderHome()});
-  document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{state.quick=true;startSession({id:'quick',title:'Entraînement rapide',count:Number(b.dataset.quick),modes:['audio','reverse','pairs','sentence'],theme:'all',level:'all'},Number(b.dataset.quick))});
-  $('reviewBtn').onclick=()=>{state.quick=true;startSession({id:'review',title:'Révision',count:Math.min(10,read('mistakes',[]).length),modes:['review'],theme:'all',level:'all'})};
-  $('startMission').onclick=()=>state.mission&&startSession(state.mission);$('validate').onclick=validateRound;$('goRoadmap').onclick=goHome;$('retry').onclick=()=>startSession(state.mission,state.rounds.length);$('backBtn').onclick=goHome;$('skipAudio').onclick=()=>{const q=current();if(q.type==='audio'||q.type==='sentence'){$('feedback').textContent='Indice : '+q.item.en.charAt(0).toUpperCase()+'…';$('feedback').className='feedback show bad'}else{$('feedback').textContent='Observe bien les propositions.';$('feedback').className='feedback show bad'}};
-  $('finishRoadmap').onclick=()=>{write('road',{});localStorage.setItem(key('cycle'),String(Number(localStorage.getItem(key('cycle'))||1)+1));state.mission=null;$('startMission').disabled=true;$('startMission').textContent='CHOISIS UNE SÉRIE';renderHome();alert('Nouveau parcours créé avec d’autres questions.')};
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();state.installPrompt=e;$('installBtn').classList.add('show')});$('installBtn').onclick=()=>{if(!state.installPrompt)return;state.installPrompt.prompt();state.installPrompt=null;$('installBtn').classList.remove('show')};
-  if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-  window.appBack=goHome;renderHome();
-})();
-  </script>
+<script src="phrases-extra.js"></script>
+<script src="activities-extra.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
