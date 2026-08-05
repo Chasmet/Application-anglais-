@@ -1,13 +1,23 @@
 (() => {
-  const PAGE_SIZE = 45;
+  const PAGE_SIZE = 8;
   const alphabet = Array.isArray(window.ENGLISH_ALPHABET) ? window.ENGLISH_ALPHABET : [];
   const verbs = Array.isArray(window.ENGLISH_VERBS) ? window.ENGLISH_VERBS : [];
+  const pronouns = [
+    { en: 'I', fr: 'je', bePresent: 'am', bePast: 'was' },
+    { en: 'You', fr: 'tu / vous', bePresent: 'are', bePast: 'were' },
+    { en: 'He / She / It', fr: 'il / elle / ça', bePresent: 'is', bePast: 'was', third: true },
+    { en: 'We', fr: 'nous', bePresent: 'are', bePast: 'were' },
+    { en: 'You', fr: 'vous', bePresent: 'are', bePast: 'were' },
+    { en: 'They', fr: 'ils / elles', bePresent: 'are', bePast: 'were' }
+  ];
+
   const normalizeText = value => String(value || '').toLowerCase().normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').trim();
   const escapeHtml = value => String(value || '').replace(/[&<>"]/g, char => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'
   }[char]));
-  const speak = (text, rate = 0.76) => {
+
+  const speak = (text, rate = 0.72) => {
     if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
       window.AndroidTTS.speak(String(text), rate);
       return;
@@ -45,6 +55,44 @@
     });
   });
 
+  function thirdPerson(base) {
+    if (base === 'be') return 'is';
+    if (base === 'have') return 'has';
+    if (base === 'do') return 'does';
+    if (/[^aeiou]y$/i.test(base)) return `${base.slice(0, -1)}ies`;
+    if (/(s|x|z|ch|sh|o)$/i.test(base)) return `${base}es`;
+    return `${base}s`;
+  }
+
+  function ingForm(base) {
+    const exceptions = {
+      be: 'being', begin: 'beginning', die: 'dying', get: 'getting', lie: 'lying',
+      put: 'putting', run: 'running', sit: 'sitting', stop: 'stopping', swim: 'swimming',
+      tie: 'tying', travel: 'travelling', win: 'winning', write: 'writing'
+    };
+    if (exceptions[base]) return exceptions[base];
+    if (/ie$/i.test(base)) return `${base.slice(0, -2)}ying`;
+    if (/[^e]e$/i.test(base) && !/(ee|ye|oe)$/i.test(base)) return `${base.slice(0, -1)}ing`;
+    return `${base}ing`;
+  }
+
+  function conjugate(verb, pronoun) {
+    const isBe = verb.base === 'be';
+    return {
+      present: isBe ? pronoun.bePresent : (pronoun.third ? thirdPerson(verb.base) : verb.base),
+      past: isBe ? pronoun.bePast : verb.past,
+      future: `will ${verb.base}`,
+      continuous: `${pronoun.bePresent} ${ingForm(verb.base)}`
+    };
+  }
+
+  function tenseSpeech(verb, tense) {
+    return pronouns.map(pronoun => {
+      const forms = conjugate(verb, pronoun);
+      return `${pronoun.en} ${forms[tense]}`;
+    }).join('. ') + '.';
+  }
+
   const search = document.getElementById('verbSearch');
   const typeFilter = document.getElementById('verbType');
   const list = document.getElementById('verbList');
@@ -71,40 +119,90 @@
     count.textContent = `${filtered.length} verbe${filtered.length > 1 ? 's' : ''}`;
     empty.hidden = filtered.length !== 0;
     loadMore.hidden = visible.length >= filtered.length;
-    list.innerHTML = visible.map((verb, index) => `
-      <article class="verbCard">
-        <div class="verbMain">
-          <strong>${escapeHtml(verb.base)}</strong>
-          <span class="translation">${escapeHtml(verb.fr)}</span>
-          <div class="verbMeta">
-            <span class="tag ${escapeHtml(verb.type)}">${verb.type === 'irregular' ? 'Irrégulier' : 'Régulier'}</span>
+
+    list.innerHTML = visible.map((verb, index) => {
+      const rows = pronouns.map(pronoun => {
+        const forms = conjugate(verb, pronoun);
+        return `
+          <tr>
+            <th scope="row"><strong>${escapeHtml(pronoun.en)}</strong><small>${escapeHtml(pronoun.fr)}</small></th>
+            <td>${escapeHtml(forms.present)}</td>
+            <td>${escapeHtml(forms.past)}</td>
+            <td>${escapeHtml(forms.future)}</td>
+            <td>${escapeHtml(forms.continuous)}</td>
+          </tr>`;
+      }).join('');
+
+      return `
+        <article class="verbCard conjugationCard">
+          <div class="conjugationHeader">
+            <div>
+              <strong>${escapeHtml(verb.base)}</strong>
+              <span class="translation">${escapeHtml(verb.fr)}</span>
+              <div class="verbMeta">
+                <span class="tag ${escapeHtml(verb.type)}">${verb.type === 'irregular' ? 'Irrégulier' : 'Régulier'}</span>
+              </div>
+            </div>
+            <button class="soundButton" data-full-verb="${index}" aria-label="Écouter la conjugaison de ${escapeHtml(verb.base)}">🔊</button>
           </div>
-          <div class="verbForms">
+
+          <div class="verbForms summaryForms">
             <div class="verbForm"><small>Base</small><span>${escapeHtml(verb.base)}</span></div>
             <div class="verbForm"><small>Prétérit</small><span>${escapeHtml(verb.past)}</span></div>
             <div class="verbForm"><small>Participe passé</small><span>${escapeHtml(verb.participle)}</span></div>
           </div>
-        </div>
-        <button class="soundButton" data-verb-index="${index}" aria-label="Écouter ${escapeHtml(verb.base)}">🔊</button>
-      </article>
-    `).join('');
-    list.querySelectorAll('[data-verb-index]').forEach(button => {
+
+          <div class="conjugationScroll" role="region" aria-label="Tableau de conjugaison de ${escapeHtml(verb.base)}" tabindex="0">
+            <table class="conjugationTable">
+              <thead>
+                <tr>
+                  <th>Pronom</th>
+                  <th>Présent</th>
+                  <th>Prétérit</th>
+                  <th>Futur</th>
+                  <th>Présent continu</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+
+          <div class="tenseAudio" aria-label="Écouter un temps">
+            <button data-verb-index="${index}" data-tense="present">🔊 Présent</button>
+            <button data-verb-index="${index}" data-tense="past">🔊 Prétérit</button>
+            <button data-verb-index="${index}" data-tense="future">🔊 Futur</button>
+            <button data-verb-index="${index}" data-tense="continuous">🔊 Continu</button>
+          </div>
+        </article>`;
+    }).join('');
+
+    list.querySelectorAll('[data-full-verb]').forEach(button => {
+      button.addEventListener('click', () => {
+        const verb = visible[Number(button.dataset.fullVerb)];
+        speak(tenseSpeech(verb, 'present'), 0.68);
+      });
+    });
+
+    list.querySelectorAll('[data-tense]').forEach(button => {
       button.addEventListener('click', () => {
         const verb = visible[Number(button.dataset.verbIndex)];
-        speak(`${verb.base}. ${verb.past}. ${verb.participle}.`, 0.7);
+        speak(tenseSpeech(verb, button.dataset.tense), 0.68);
       });
     });
   }
 
   search.addEventListener('input', () => applyFilters());
   typeFilter.addEventListener('change', () => applyFilters());
-  loadMore.addEventListener('click', () => { visibleCount += PAGE_SIZE; renderVerbs(); });
+  loadMore.addEventListener('click', () => {
+    visibleCount += PAGE_SIZE;
+    renderVerbs();
+  });
   document.getElementById('randomVerb').addEventListener('click', () => {
     const pool = filtered.length ? filtered : verbs;
     const verb = pool[Math.floor(Math.random() * pool.length)];
     search.value = verb.base;
     applyFilters();
-    speak(`${verb.base}. ${verb.past}. ${verb.participle}.`, 0.7);
+    speak(tenseSpeech(verb, 'present'), 0.68);
   });
 
   applyFilters();
