@@ -9,6 +9,17 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+.moduleGrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.moduleCard{min-height:148px;border:3px solid var(--border);border-radius:22px;background:var(--card);color:var(--text);text-decoration:none;padding:15px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 5px 0 #263f46}
+.moduleCard.vocabulary{border-color:#3dbbff;background:linear-gradient(145deg,#17394a,#133131)}
+.moduleCard.grammar{border-color:#ffd54a;background:linear-gradient(145deg,#403716,#133131)}
+.moduleIcon{font-size:36px;margin-bottom:8px}
+.moduleCard strong{font-size:20px}
+.moduleCard small{color:var(--muted);font-size:13px;line-height:1.35;margin-top:6px}
+.moduleCard:active{transform:translateY(3px);box-shadow:0 2px 0 #263f46}
+@media(max-width:400px){.moduleGrid{grid-template-columns:1fr}.moduleCard{min-height:118px}}
+  </style>
   <title>Quiz Anglais+ 3</title>
 </head>
 <body>
@@ -32,6 +43,20 @@
 
     <h2>Entraînement rapide</h2>
     <div class="grid2"><button class="btn" data-quick="5">⚡ 5 questions</button><button class="btn" data-quick="10">🔥 10 questions</button><button class="btn" id="dailyBtn">📅 Défi du jour</button><button class="btn" id="reviewBtn">🧠 Réviser mes erreurs</button><button class="btn" id="placementBtn">🎯 Test de niveau</button><button class="btn" id="grammarBtn">📝 Grammaire</button></div>
+
+    <h2>Bibliothèque séparée</h2>
+    <div class="moduleGrid">
+      <a class="moduleCard vocabulary" href="vocabulaire.html">
+        <span class="moduleIcon">📚</span>
+        <strong>Vocabulaire</strong>
+        <small>Parcourir tous les mots, rechercher et écouter.</small>
+      </a>
+      <a class="moduleCard grammar" href="grammaire.html">
+        <span class="moduleIcon">🔤</span>
+        <strong>Grammaire</strong>
+        <small>Alphabet anglais et verbes essentiels.</small>
+      </a>
+    </div>
 
     <h2>Thèmes rapides</h2>
     <div class="themes" id="themes"></div>
