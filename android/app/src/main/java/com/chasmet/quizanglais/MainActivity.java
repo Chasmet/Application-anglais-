@@ -68,11 +68,18 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     @Override
     public void onBackPressed() {
-        if (webView != null) {
-            webView.evaluateJavascript("window.appBack && window.appBack();", null);
-        } else {
-            super.onBackPressed();
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+            return;
         }
+        if (webView != null) {
+            webView.evaluateJavascript(
+                    "if (typeof window.appBack === 'function') { window.appBack(); }",
+                    null
+            );
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override

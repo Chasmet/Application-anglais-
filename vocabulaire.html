@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2424" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="learning-tools.css" />
+  <title>Vocabulaire anglais</title>
+</head>
+<body data-page="vocabulaire">
+<main class="libraryApp">
+  <header class="libraryHeader">
+    <a class="backLink" href="index.html" aria-label="Retour à l'accueil">←</a>
+    <div><span class="eyebrow">Bibliothèque séparée</span><h1>Vocabulaire</h1></div>
+  </header>
+
+  <section class="introCard blue">
+    <div class="introIcon">📚</div>
+    <div><h2>Tous les mots de l’application</h2><p>Recherche un mot en anglais ou en français, filtre par niveau ou par thème, puis écoute sa prononciation.</p></div>
+  </section>
+
+  <section class="filtersCard">
+    <label class="searchField">
+      <span>Rechercher</span>
+      <input id="vocabSearch" type="search" placeholder="Exemple : maison, house…" autocomplete="off" />
+    </label>
+    <div class="filterGrid">
+      <label><span>Niveau</span><select id="levelFilter"><option value="all">Tous les niveaux</option><option value="debutant">Débutant</option><option value="moyen">Moyen</option><option value="confirme">Confirmé</option></select></label>
+      <label><span>Thème</span><select id="themeFilter"><option value="all">Tous les thèmes</option></select></label>
+    </div>
+  </section>
+
+  <div class="listHead"><strong id="vocabCount">0 mot</strong><button class="smallButton" id="randomWord">🎲 Mot au hasard</button></div>
+  <section class="wordList" id="wordList" aria-live="polite"></section>
+  <button class="loadMore" id="loadMore" hidden>AFFICHER PLUS DE MOTS</button>
+  <p class="emptyState" id="emptyState" hidden>Aucun mot ne correspond à cette recherche.</p>
+</main>
+
+<script src="words.js"></script>
+<script src="words-debutant.js"></script>
+<script src="words-moyen.js"></script>
+<script src="words-confirme.js"></script>
+<script src="vocabulaire.js"></script>
+</body>
+</html>

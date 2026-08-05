@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2424" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="learning-tools.css" />
+  <title>Grammaire anglaise</title>
+</head>
+<body data-page="grammaire">
+<main class="libraryApp">
+  <header class="libraryHeader">
+    <a class="backLink" href="index.html" aria-label="Retour à l'accueil">←</a>
+    <div><span class="eyebrow">Cours séparé</span><h1>Grammaire</h1></div>
+  </header>
+
+  <section class="introCard yellow">
+    <div class="introIcon">🔤</div>
+    <div>
+      <h2>Alphabet et conjugaison</h2>
+      <p>Les lettres anglaises et de vrais tableaux pour conjuguer chaque verbe avec tous les pronoms.</p>
+    </div>
+  </section>
+
+  <nav class="tabs" aria-label="Sections de grammaire">
+    <button class="tabButton active" data-tab="alphabet">🔤 Alphabet</button>
+    <button class="tabButton" data-tab="verbs">📊 Conjugaison</button>
+  </nav>
+
+  <section class="panel active" id="alphabetPanel">
+    <div class="helpCard"><strong>Conseil :</strong> touche une lettre pour entendre son nom, puis son mot d’exemple.</div>
+    <div class="alphabetGrid" id="alphabetGrid"></div>
+  </section>
+
+  <section class="panel" id="verbsPanel">
+    <div class="helpCard">
+      <strong>Tableaux complets :</strong> chaque verbe est conjugué avec I, you, he/she/it, we et they au présent, au prétérit, au futur et au présent continu.
+    </div>
+
+    <section class="filtersCard">
+      <label class="searchField">
+        <span>Rechercher un verbe</span>
+        <input id="verbSearch" type="search" placeholder="Exemple : aller, go…" autocomplete="off" />
+      </label>
+      <label>
+        <span>Type</span>
+        <select id="verbType">
+          <option value="all">Tous les verbes</option>
+          <option value="irregular">Irréguliers</option>
+          <option value="regular">Réguliers</option>
+        </select>
+      </label>
+    </section>
+
+    <div class="listHead">
+      <strong id="verbCount">0 verbe</strong>
+      <button class="smallButton" id="randomVerb">🎲 Verbe au hasard</button>
+    </div>
+
+    <div class="verbList conjugationList" id="verbList"></div>
+    <button class="loadMore" id="verbLoadMore" hidden>AFFICHER PLUS DE TABLEAUX</button>
+    <p class="emptyState" id="verbEmpty" hidden>Aucun verbe ne correspond à cette recherche.</p>
+  </section>
+</main>
+<script src="grammar-data.js"></script>
+<script src="grammaire.js"></script>
+</body>
+</html>
