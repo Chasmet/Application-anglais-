@@ -1,10 +1,11 @@
-const CACHE_NAME='quiz-anglais-v8';
+const CACHE_NAME='quiz-anglais-v9';
 const FILES=[
   './','./index.html','./style.css','./app.js',
   './words.js','./words-debutant.js','./words-moyen.js','./words-confirme.js',
   './lessons.js','./phrases-extra.js','./activities-extra.js',
   './vocabulaire.html','./vocabulaire.js',
   './grammaire.html','./grammaire.js','./grammar-data.js',
+  './verb-pronunciation.js','./french-verb-data.js',
   './learning-tools.css','./manifest.webmanifest','./icon.svg'
 ];
 self.addEventListener('install',event=>{
