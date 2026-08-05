@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 7
-        versionName '3.0.0'
+        versionCode 8
+        versionName '3.1.0'
     }
 
     buildTypes {
@@ -33,6 +33,9 @@ tasks.register('syncWebAssets', Copy) {
         include 'index.html', 'style.css', 'app.js',
                 'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
                 'lessons.js', 'phrases-extra.js', 'activities-extra.js',
+                'vocabulaire.html', 'vocabulaire.js',
+                'grammaire.html', 'grammaire.js', 'grammar-data.js',
+                'learning-tools.css',
                 'icon.svg', 'manifest.webmanifest', 'sw.js'
     }
     into "$projectDir/src/main/assets"
