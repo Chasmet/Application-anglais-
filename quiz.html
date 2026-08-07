@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2424" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <style>.menuReturn{display:inline-flex;align-items:center;gap:7px;color:#22e4e4;text-decoration:none;font-weight:900;margin:0 0 14px;padding:9px 12px;border:2px solid #36545e;border-radius:14px;background:#102e2e}</style>
+  <title>Entraînement anglais</title>
+</head>
+<body>
+<main class="app">
+  <header class="top"><button id="backBtn" aria-label="Retour">×</button><div class="bar"><div class="fill" id="progress"></div></div><div class="topStat">⚡ <span id="xpTop">0</span></div></header>
+  <section class="screen active" id="home">
+    <a class="menuReturn" href="index.html">← Menu principal</a>
+    <h1>Entraînement</h1>
+    <div class="card">
+      <p id="homeIntro">Écoute, lis, associe, réponds et construis des phrases.</p>
+      <div class="stats"><div class="stat"><strong id="best">0%</strong><span>meilleur</span></div><div class="stat"><strong id="streak">0</strong><span>jours</span></div><div class="stat"><strong id="mastered">0</strong><span>maîtrisés</span></div><div class="stat"><strong id="reviewCount">0</strong><span>à réviser</span></div></div>
+      <div class="contentLine"><span>Contenu du niveau</span><strong id="contentCount">0 éléments</strong></div>
+      <button class="btn primary install" id="installBtn">INSTALLER L’APPLICATION</button>
+    </div>
+    <h2>Profil</h2>
+    <div class="grid2"><button class="choice selected" data-profile="Yvane">Yvane</button><button class="choice" data-profile="Nelvyn">Nelvyn</button></div>
+    <h2>Niveau</h2>
+    <div class="levels"><button class="levelBtn selected" data-level="debutant">🌱 Débutant<span>A1</span></button><button class="levelBtn" data-level="moyen">🚀 Moyen<span>A2–B1</span></button><button class="levelBtn" data-level="confirme">🏆 Confirmé<span>B1–B2</span></button></div>
+    <h2>Entraînement rapide</h2>
+    <div class="grid2"><button class="btn" data-quick="5">⚡ 5 questions</button><button class="btn" data-quick="10">🔥 10 questions</button><button class="btn" id="dailyBtn">📅 Défi du jour</button><button class="btn" id="reviewBtn">🧠 Réviser mes erreurs</button><button class="btn" id="placementBtn">🎯 Test de niveau</button><button class="btn" id="grammarBtn">📝 Grammaire</button></div>
+    <h2>Thèmes rapides</h2><div class="themes" id="themes"></div>
+    <div class="card" style="margin-top:16px"><div class="roadHead"><h2 style="margin:0" id="roadTitle">Roadmap Débutant</h2><div class="stars" id="roadStars">0/30 ⭐</div></div><p>Chaque série mélange plusieurs exercices. Plus de 50% pour débloquer la suite.</p><div class="missions" id="missions"></div><div class="finishBox" id="finishBox"><p>Roadmap terminée. Crée un nouveau parcours avec d’autres questions.</p><button class="btn primary" id="finishRoadmap">TERMINER LA ROADMAP</button></div></div>
+    <div class="bottom"><button class="btn primary" id="startMission" disabled>CHOISIS UNE SÉRIE</button></div>
+  </section>
+  <section class="screen" id="quiz"><div class="quizHead"><span id="profileLabel">Yvane</span><span class="hearts" id="hearts">❤❤❤</span><span id="scoreLabel">0/0</span></div><div class="instruction" id="instruction">Écoute et choisis</div><div class="sub" id="questionMeta"></div><div id="exercise"></div><div class="feedback" id="feedback"></div><div class="reveal" id="reveal"></div><div class="bottom"><button class="ghost" id="hintBtn">AFFICHER UN INDICE</button><button class="btn primary" id="validate" disabled>VALIDER</button></div></section>
+  <section class="screen" id="result"><h1>Résultat</h1><div class="card result"><h2 id="resultTitle">Bien joué</h2><div class="scoreBig" id="resultScore">0/0</div><div class="starBig" id="resultStars">☆☆☆</div><p id="resultText"></p><div class="badge" id="resultBadge">+0 XP</div></div><div class="bottom"><button class="ghost" id="goRoadmap">RETOUR À L’ACCUEIL</button><button class="btn primary" id="retry">RECOMMENCER</button></div></section>
+</main>
+<script src="words.js"></script><script src="words-debutant.js"></script><script src="words-moyen.js"></script><script src="words-confirme.js"></script><script src="lessons.js"></script><script src="phrases-extra.js"></script><script src="activities-extra.js"></script><script src="app.js"></script>
+</body>
+</html>
