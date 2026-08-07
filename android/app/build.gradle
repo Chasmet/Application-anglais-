@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 9
-        versionName '3.2.0'
+        versionCode 10
+        versionName '3.3.0'
     }
 
     buildTypes {
@@ -30,11 +30,11 @@ android {
 def webRoot = rootProject.projectDir.parentFile
 tasks.register('syncWebAssets', Copy) {
     from(webRoot) {
-        include 'index.html', 'style.css', 'app.js',
+        include 'index.html', 'quiz.html', 'style.css', 'app.js',
                 'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
                 'lessons.js', 'phrases-extra.js', 'activities-extra.js',
                 'vocabulaire.html', 'vocabulaire.js',
-                'grammaire.html', 'grammaire.js', 'grammar-data.js',
+                'grammaire.html', 'grammaire.js', 'grammaire-ux.js', 'grammaire-ux.css', 'grammar-data.js',
                 'verb-pronunciation.js', 'french-verb-data.js',
                 'learning-tools.css',
                 'icon.svg', 'manifest.webmanifest', 'sw.js'
