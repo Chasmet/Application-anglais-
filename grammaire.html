@@ -6,86 +6,25 @@
   <meta name="theme-color" content="#0b2424" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="learning-tools.css" />
+  <link rel="stylesheet" href="grammaire-ux.css" />
   <style>
-    .pdfVerbCard { display: block; }
-    .pdfVerbHeader > div { min-width: 0; }
-    .verbNumber { display:block;color:#fff;font-size:25px;font-weight:1000;line-height:1.05; }
-    .pdfVerbHeader > div > strong { display:block;color:var(--cyan);font-size:17px;margin:5px 0 8px; }
-    .pdfVerbTable { min-width:760px; }
-    .pdfVerbTable thead th:nth-child(1) { min-width:95px; }
-    .pdfVerbTable thead th:nth-child(2) { min-width:190px; }
-    .pdfVerbTable thead th:nth-child(3) { min-width:180px; }
-    .pdfVerbTable thead th:nth-child(4) { min-width:230px; }
-    .englishCell { position:relative;padding-right:52px !important; }
-    .englishCell strong { font-size:15px; }
-    .rowAudio { position:absolute;top:50%;right:7px;transform:translateY(-50%);width:38px;height:38px;border:2px solid #346579;border-radius:11px;background:#0e2929;color:var(--blue);cursor:pointer; }
-    .pronunciationCell { color:var(--yellow) !important;font-weight:800 !important; }
-    .frenchCell { color:#e8ffd8 !important;font-weight:800 !important; }
-    .pdfVerbTable tbody th { color:#fff;font-size:15px;min-width:95px; }
-    @media(max-width:430px){.pdfVerbTable{min-width:720px}.verbNumber{font-size:22px}}
+    .pdfVerbCard{display:block}.pdfVerbHeader>div{min-width:0}.verbNumber{display:block;color:#fff;font-size:25px;font-weight:1000;line-height:1.05}.pdfVerbHeader>div>strong{display:block;color:var(--cyan);font-size:17px;margin:5px 0 8px}.rowAudio{width:38px;height:38px;border:2px solid #346579;border-radius:11px;background:#0e2929;color:var(--blue);cursor:pointer}
   </style>
   <title>Grammaire anglaise</title>
 </head>
 <body data-page="grammaire">
 <main class="libraryApp">
-  <header class="libraryHeader">
-    <a class="backLink" href="index.html" aria-label="Retour à l'accueil">←</a>
-    <div><span class="eyebrow">Cours séparé</span><h1>Grammaire</h1></div>
-  </header>
-
-  <section class="introCard yellow">
-    <div class="introIcon">🔤</div>
-    <div>
-      <h2>Alphabet et conjugaison</h2>
-      <p>Chaque verbe possède un tableau complet avec tous les pronoms, la prononciation simplifiée et la traduction française.</p>
-    </div>
-  </section>
-
-  <nav class="tabs" aria-label="Sections de grammaire">
-    <button class="tabButton active" data-tab="alphabet">🔤 Alphabet</button>
-    <button class="tabButton" data-tab="verbs">📊 Tous les verbes</button>
-  </nav>
-
-  <section class="panel active" id="alphabetPanel">
-    <div class="helpCard"><strong>Conseil :</strong> touche une lettre pour entendre son nom, puis son mot d'exemple.</div>
-    <div class="alphabetGrid" id="alphabetGrid"></div>
-  </section>
-
+  <header class="libraryHeader"><a class="backLink" href="index.html" aria-label="Retour au menu">←</a><div><span class="eyebrow">Cours séparé</span><h1>Grammaire</h1></div></header>
+  <section class="introCard yellow"><div class="introIcon">🔤</div><div><h2>Alphabet et conjugaison</h2><p>Tout est pensé pour être lisible directement sur téléphone, sans déplacement horizontal.</p></div></section>
+  <nav class="tabs" aria-label="Sections de grammaire"><button class="tabButton active" data-tab="alphabet">🔤 Alphabet</button><button class="tabButton" data-tab="verbs">📊 Tous les verbes</button></nav>
+  <section class="panel active" id="alphabetPanel"><div class="helpCard"><strong>Conseil :</strong> touche une lettre pour entendre son nom, puis son mot d'exemple.</div><div class="alphabetGrid" id="alphabetGrid"></div></section>
   <section class="panel" id="verbsPanel">
-    <div class="helpCard">
-      <strong>Présentation complète :</strong> chaque tableau contient les colonnes
-      <b>Personne</b>, <b>Conjugaison</b>, <b>Prononciation</b> et <b>Français</b>,
-      comme dans ton document. Appuie sur 🔊 pour écouter chaque ligne.
-    </div>
-
-    <section class="filtersCard">
-      <label class="searchField">
-        <span>Rechercher un verbe</span>
-        <input id="verbSearch" type="search" placeholder="Exemple : travailler, work…" autocomplete="off" />
-      </label>
-      <label>
-        <span>Type</span>
-        <select id="verbType">
-          <option value="all">Tous les verbes</option>
-          <option value="irregular">Irréguliers</option>
-          <option value="regular">Réguliers</option>
-        </select>
-      </label>
-    </section>
-
-    <div class="listHead">
-      <strong id="verbCount">0 verbe</strong>
-      <button class="smallButton" id="randomVerb">🎲 Verbe au hasard</button>
-    </div>
-
-    <div class="verbList conjugationList" id="verbList"></div>
-    <button class="loadMore" id="verbLoadMore" hidden>AFFICHER PLUS DE TABLEAUX</button>
-    <p class="emptyState" id="verbEmpty" hidden>Aucun verbe ne correspond à cette recherche.</p>
+    <div class="helpCard"><strong>Lecture mobile :</strong> pour chaque pronom tu vois immédiatement la conjugaison anglaise, la prononciation et la traduction française. Aucun scroll horizontal.</div>
+    <section class="filtersCard"><label class="searchField"><span>Rechercher un verbe</span><input id="verbSearch" type="search" placeholder="Exemple : travailler, work…" autocomplete="off" /></label><label><span>Type</span><select id="verbType"><option value="all">Tous les verbes</option><option value="irregular">Irréguliers</option><option value="regular">Réguliers</option></select></label></section>
+    <div class="listHead"><strong id="verbCount">0 verbe</strong><button class="smallButton" id="randomVerb">🎲 Verbe au hasard</button></div>
+    <div class="verbList conjugationList" id="verbList"></div><button class="loadMore" id="verbLoadMore" hidden>AFFICHER PLUS DE VERBES</button><p class="emptyState" id="verbEmpty" hidden>Aucun verbe ne correspond à cette recherche.</p>
   </section>
 </main>
-<script src="grammar-data.js"></script>
-<script src="verb-pronunciation.js"></script>
-<script src="french-verb-data.js"></script>
-<script src="grammaire.js"></script>
+<script src="grammar-data.js"></script><script src="verb-pronunciation.js"></script><script src="french-verb-data.js"></script><script src="grammaire.js"></script><script src="grammaire-ux.js"></script>
 </body>
 </html>
