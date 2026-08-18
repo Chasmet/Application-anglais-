@@ -53,6 +53,8 @@ jobs:
           node --check lessons.js
           node --check phrases-extra.js
           node --check activities-extra.js
+          node --check content-ultra.js
+          node --check corrections-plus.js
           node --check vocabulaire.js
           node --check grammaire.js
           node --check grammaire-ux.js
@@ -66,6 +68,6 @@ jobs:
       - name: Publier l APK
         uses: actions/upload-artifact@v4
         with:
-          name: Quiz-Anglais-Plus-v3.3-APK
+          name: Quiz-Anglais-Plus-v3.4-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
