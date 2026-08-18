@@ -32,17 +32,21 @@ jobs:
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
+
       - name: Installer Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Installer Android SDK
         uses: android-actions/setup-android@v3
+
       - name: Installer Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
+
       - name: Vérifier les fichiers JavaScript
         run: |
           node --check app.js
@@ -62,12 +66,32 @@ jobs:
           node --check verb-pronunciation.js
           node --check french-verb-data.js
           node --check sw.js
-      - name: Construire l APK
+
+      - name: Télécharger Kokoro-82M pour l embarquer dans l APK
+        run: |
+          mkdir -p android/app/src/main/assets/kokoro-model
+          curl -L --fail --retry 3 \
+            'https://huggingface.co/hexgrad/Kokoro-82M/resolve/e6a2633a608163a6383195168a1abf0c4b8aeaa7/kokoro-v0_19.onnx?download=true' \
+            -o android/app/src/main/assets/kokoro-model/kokoro-v0_19.onnx
+          SIZE=$(stat -c%s android/app/src/main/assets/kokoro-model/kokoro-v0_19.onnx)
+          echo "Taille modèle Kokoro : $SIZE octets"
+          test "$SIZE" -gt 314572800
+
+      - name: Construire l APK Kokoro
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
-      - name: Publier l APK
+
+      - name: Vérifier que Kokoro est réellement dans l APK
+        run: |
+          APK='android/app/build/outputs/apk/debug/app-debug.apk'
+          unzip -l "$APK" | grep 'assets/kokoro-model/kokoro-v0_19.onnx'
+          APK_SIZE=$(stat -c%s "$APK")
+          echo "Taille APK : $APK_SIZE octets"
+          test "$APK_SIZE" -gt 314572800
+
+      - name: Publier l APK Kokoro complet
         uses: actions/upload-artifact@v4
         with:
-          name: Quiz-Anglais-Plus-v3.4-APK
+          name: Quiz-Anglais-v3.5.1-Kokoro-COMPLET
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
