@@ -59,6 +59,8 @@ jobs:
           node --check activities-extra.js
           node --check content-ultra.js
           node --check corrections-plus.js
+          node --check academie.js
+          node --check chiffres.js
           node --check vocabulaire.js
           node --check grammaire.js
           node --check grammaire-ux.js
@@ -71,11 +73,11 @@ jobs:
         working-directory: android
         run: gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath | tee kokoro-deps.txt
 
-      - name: Construire l APK Kokoro
+      - name: Construire l APK complet
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
 
-      - name: Vérifier le moteur et les voix Kokoro dans l APK
+      - name: Vérifier Kokoro voix académie chiffres et micro
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
@@ -84,13 +86,18 @@ jobs:
           unzip -l "$APK" | grep 'voices/am_adam.bin'
           unzip -l "$APK" | grep 'voices/bf_emma.bin'
           unzip -l "$APK" | grep 'voices/bm_george.bin'
+          unzip -l "$APK" | grep 'assets/academie.html'
+          unzip -l "$APK" | grep 'assets/academie.js'
+          unzip -l "$APK" | grep 'assets/chiffres.html'
+          unzip -l "$APK" | grep 'assets/chiffres.js'
+          grep -q 'android.permission.RECORD_AUDIO' app/src/main/AndroidManifest.xml || grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
           APK_SIZE=$(stat -c%s "$APK")
           echo "Taille APK : $APK_SIZE octets"
           test "$APK_SIZE" -gt 83886080
 
-      - name: Publier l APK Kokoro complet
+      - name: Publier l APK complet
         uses: actions/upload-artifact@v4
         with:
-          name: Quiz-Anglais-v3.5.3-Kokoro-6-VOIX
+          name: Anglais-Plus-v3.6.0-ACADEMIE-CHIFFRES-KOKORO
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
