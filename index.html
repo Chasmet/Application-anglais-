@@ -14,9 +14,10 @@
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{background:var(--bg)}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#184747 0%,var(--bg) 52%);font-family:Arial,Helvetica,sans-serif;color:var(--text)}
     .launcher{width:100%;max-width:620px;min-height:100vh;margin:auto;padding:calc(28px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
     .brand{text-align:center;margin:4vh 0 28px}.brandIcon{width:78px;height:78px;margin:0 auto 16px;display:grid;place-items:center;border-radius:25px;background:#153939;border:3px solid #45656d;font-size:38px;box-shadow:0 7px 0 #213c42}.brand h1{font-size:34px;margin:0 0 8px}.brand p{margin:0;color:var(--muted);font-size:16px;line-height:1.45}
-    .choices{display:grid;gap:14px}.choice{position:relative;text-decoration:none;color:var(--text);border:3px solid var(--border);border-radius:26px;background:rgba(19,49,49,.96);padding:19px;min-height:128px;display:grid;grid-template-columns:62px 1fr 30px;gap:14px;align-items:center;box-shadow:0 7px 0 #223d43;transition:.15s transform,.15s box-shadow}.choice:active{transform:translateY(4px);box-shadow:0 3px 0 #223d43}.choice .icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:31px;background:#0e2929}.choice strong{display:block;font-size:22px;margin-bottom:5px}.choice small{display:block;color:var(--muted);font-size:14px;line-height:1.35}.choice .arrow{font-size:30px;color:var(--muted);font-weight:900}.choice.quiz{border-color:var(--green)}.choice.quiz .icon{color:var(--green)}.choice.vocab{border-color:var(--blue)}.choice.grammar{border-color:var(--yellow)}
+    .choices{display:grid;gap:14px}.choice{width:100%;position:relative;text-decoration:none;color:var(--text);border:3px solid var(--border);border-radius:26px;background:rgba(19,49,49,.96);padding:19px;min-height:128px;display:grid;grid-template-columns:62px 1fr 30px;gap:14px;align-items:center;box-shadow:0 7px 0 #223d43;transition:.15s transform,.15s box-shadow;text-align:left;font:inherit}.choice:active{transform:translateY(4px);box-shadow:0 3px 0 #223d43}.choice .icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:31px;background:#0e2929}.choice strong{display:block;font-size:22px;margin-bottom:5px}.choice small{display:block;color:var(--muted);font-size:14px;line-height:1.35}.choice .arrow{font-size:30px;color:var(--muted);font-weight:900}.choice.quiz{border-color:var(--green)}.choice.quiz .icon{color:var(--green)}.choice.vocab{border-color:var(--blue)}.choice.grammar{border-color:var(--yellow)}.choice.voice{border-color:var(--cyan)}
     .footer{margin-top:auto;text-align:center;color:#738f94;font-size:12px;padding-top:24px}
-    @media(max-width:390px){.launcher{padding-left:14px;padding-right:14px}.brand{margin-top:2vh}.brand h1{font-size:30px}.choice{min-height:116px;padding:15px;grid-template-columns:54px 1fr 24px}.choice .icon{width:52px;height:52px;font-size:27px}.choice strong{font-size:20px}.choice small{font-size:13px}}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:50}.overlay.open{display:flex}.sheet{width:100%;max-width:620px;margin:0 auto;background:#102d2d;border:2px solid #3f666d;border-bottom:0;border-radius:28px 28px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}.sheetHead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.sheetHead h2{margin:0;font-size:25px}.closeBtn{border:0;background:#213f42;color:white;width:42px;height:42px;border-radius:14px;font-size:22px}.voiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.voiceBtn{border:2px solid #36545e;background:#163838;color:white;border-radius:18px;padding:14px 11px;text-align:left;min-height:92px}.voiceBtn.selected{border-color:var(--green);box-shadow:0 0 0 2px rgba(141,240,0,.15)}.voiceBtn b{font-size:17px;display:block;margin-bottom:4px}.voiceBtn span{font-size:12px;color:var(--muted)}.preview{margin-top:15px;width:100%;border:0;border-radius:16px;padding:14px;background:var(--green);color:#102200;font-size:16px;font-weight:800}.voiceStatus{margin:12px 2px 0;color:var(--muted);font-size:13px;line-height:1.4}
+    @media(max-width:390px){.launcher{padding-left:14px;padding-right:14px}.brand{margin-top:2vh}.brand h1{font-size:30px}.choice{min-height:116px;padding:15px;grid-template-columns:54px 1fr 24px}.choice .icon{width:52px;height:52px;font-size:27px}.choice strong{font-size:20px}.choice small{font-size:13px}.voiceGrid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -30,9 +31,53 @@
     <a class="choice quiz" href="quiz.html"><span class="icon">🎯</span><span><strong>Entraînement</strong><small>Quiz, niveaux, défis, révisions et roadmap.</small></span><span class="arrow">›</span></a>
     <a class="choice vocab" href="vocabulaire.html"><span class="icon">📚</span><span><strong>Vocabulaire</strong><small>Mots anglais, traduction, recherche et écoute.</small></span><span class="arrow">›</span></a>
     <a class="choice grammar" href="grammaire.html"><span class="icon">🔤</span><span><strong>Alphabet & verbes</strong><small>Alphabet, conjugaisons, prononciation et français.</small></span><span class="arrow">›</span></a>
+    <button class="choice voice" id="openVoices" type="button"><span class="icon">🎙️</span><span><strong>Voix anglaise</strong><small id="voiceSummary">Choisir une voix Kokoro US ou britannique.</small></span><span class="arrow">›</span></button>
   </nav>
   <div class="footer">Choisis une section pour commencer.</div>
 </main>
-<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script>
+
+<div class="overlay" id="voiceOverlay" role="dialog" aria-modal="true" aria-labelledby="voiceTitle">
+  <section class="sheet">
+    <div class="sheetHead"><h2 id="voiceTitle">Choisir la voix</h2><button class="closeBtn" id="closeVoices" type="button">✕</button></div>
+    <div class="voiceGrid" id="voiceGrid">
+      <button class="voiceBtn" data-id="af_heart" data-label="Heart — Femme US"><b>🇺🇸 Heart</b><span>Femme • américain • naturel</span></button>
+      <button class="voiceBtn" data-id="af_nicole" data-label="Nicole — Femme US"><b>🇺🇸 Nicole</b><span>Femme • américain • doux</span></button>
+      <button class="voiceBtn" data-id="am_adam" data-label="Adam — Homme US"><b>🇺🇸 Adam</b><span>Homme • américain • profond</span></button>
+      <button class="voiceBtn" data-id="am_echo" data-label="Echo — Homme US"><b>🇺🇸 Echo</b><span>Homme • américain • clair</span></button>
+      <button class="voiceBtn" data-id="bf_emma" data-label="Emma — Femme UK"><b>🇬🇧 Emma</b><span>Femme • britannique</span></button>
+      <button class="voiceBtn" data-id="bm_george" data-label="George — Homme UK"><b>🇬🇧 George</b><span>Homme • britannique</span></button>
+    </div>
+    <button class="preview" id="previewVoice" type="button">🔊 Écouter cette voix</button>
+    <div class="voiceStatus" id="voiceStatus">Kokoro-82M hors ligne. Le choix est mémorisé pour tous les quiz et le vocabulaire.</div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const overlay=document.getElementById('voiceOverlay');
+  const buttons=[...document.querySelectorAll('.voiceBtn')];
+  const summary=document.getElementById('voiceSummary');
+  const status=document.getElementById('voiceStatus');
+  let selected='af_heart';
+  const labelFor=id=>buttons.find(b=>b.dataset.id===id)?.dataset.label||id;
+  function refresh(){buttons.forEach(b=>b.classList.toggle('selected',b.dataset.id===selected));summary.textContent='Voix actuelle : '+labelFor(selected);}
+  function nativeVoice(){try{return window.AndroidTTS&&AndroidTTS.getSelectedVoiceId?AndroidTTS.getSelectedVoiceId():null}catch(e){return null}}
+  selected=nativeVoice()||localStorage.getItem('quizVoice')||'af_heart'; refresh();
+  document.getElementById('openVoices').onclick=()=>{overlay.classList.add('open'); const id=nativeVoice(); if(id){selected=id;refresh()}};
+  document.getElementById('closeVoices').onclick=()=>overlay.classList.remove('open');
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('open')});
+  buttons.forEach(btn=>btn.onclick=()=>{
+    selected=btn.dataset.id; localStorage.setItem('quizVoice',selected);
+    let ok=true; try{if(window.AndroidTTS&&AndroidTTS.setVoice)ok=AndroidTTS.setVoice(selected)}catch(e){ok=false}
+    refresh(); status.textContent=ok?'Voix sélectionnée : '+labelFor(selected)+' • utilisée partout.':'Voix enregistrée. Kokoro termine son chargement.';
+  });
+  document.getElementById('previewVoice').onclick=()=>{
+    const text='Hello! This is my English voice. Let us practice together.';
+    try{if(window.AndroidTTS&&AndroidTTS.speak){AndroidTTS.speak(text,.82);return}}catch(e){}
+    if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(text);u.lang=selected.startsWith('b')?'en-GB':'en-US';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}
+  };
+})();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
 </body>
 </html>
