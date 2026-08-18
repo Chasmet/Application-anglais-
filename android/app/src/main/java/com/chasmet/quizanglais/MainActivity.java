@@ -18,6 +18,7 @@ import java.util.Set;
 public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
     private WebView webView;
     private TextToSpeech textToSpeech;
+    private KokoroTtsManager kokoro;
     private boolean ttsReady = false;
     private String activeVoiceName = "Voix anglaise système";
 
@@ -29,6 +30,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         setContentView(R.layout.activity_main);
 
         textToSpeech = new TextToSpeech(this, this);
+        kokoro = new KokoroTtsManager(this);
+        kokoro.prepare();
         webView = findViewById(R.id.webView);
 
         WebSettings settings = webView.getSettings();
@@ -99,21 +102,33 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
 
+    private void speakFallback(String text, float rate) {
+        runOnUiThread(() -> {
+            if (!ttsReady || text == null || text.trim().isEmpty()) return;
+            textToSpeech.stop();
+            textToSpeech.setSpeechRate(Math.max(0.35f, Math.min(rate, 1.25f)));
+            textToSpeech.setPitch(1.0f);
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, "quiz-english");
+        });
+    }
+
     public final class TtsBridge {
         @JavascriptInterface
         public void speak(final String text, final float rate) {
-            runOnUiThread(() -> {
-                if (!ttsReady || text == null || text.trim().isEmpty()) return;
-                textToSpeech.stop();
-                textToSpeech.setSpeechRate(Math.max(0.35f, Math.min(rate, 1.25f)));
-                textToSpeech.setPitch(1.0f);
-                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, "quiz-english");
-            });
+            if (text == null || text.trim().isEmpty()) return;
+            if (kokoro != null && kokoro.speak(text, rate)) return;
+            speakFallback(text, rate);
         }
 
         @JavascriptInterface
         public String getVoiceName() {
-            return activeVoiceName;
+            if (kokoro != null && kokoro.isReady()) return kokoro.getStatus();
+            return activeVoiceName + " • " + (kokoro == null ? "Kokoro indisponible" : kokoro.getStatus());
+        }
+
+        @JavascriptInterface
+        public boolean isKokoroReady() {
+            return kokoro != null && kokoro.isReady();
         }
     }
 
@@ -139,6 +154,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             webView.removeJavascriptInterface("AndroidTTS");
             webView.destroy();
         }
+        if (kokoro != null) kokoro.release();
         if (textToSpeech != null) {
             textToSpeech.stop();
             textToSpeech.shutdown();
