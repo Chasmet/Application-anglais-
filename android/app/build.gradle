@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 11
-        versionName '3.4.0'
+        versionCode 12
+        versionName '3.5.0'
     }
 
     buildTypes {
@@ -25,6 +25,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    implementation 'dev.ffmpegkit-maintained:kokoro-android:0.1.0'
 }
 
 def webRoot = rootProject.projectDir.parentFile
