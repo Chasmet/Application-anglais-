@@ -75,11 +75,15 @@ jobs:
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
 
-      - name: Vérifier que le modèle Kokoro est réellement dans l APK
+      - name: Vérifier le moteur et les voix Kokoro dans l APK
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
           unzip -l "$APK" | grep -E 'model_quantized\.onnx|kokoro.*\.onnx'
+          unzip -l "$APK" | grep 'voices/af_heart.bin'
+          unzip -l "$APK" | grep 'voices/am_adam.bin'
+          unzip -l "$APK" | grep 'voices/bf_emma.bin'
+          unzip -l "$APK" | grep 'voices/bm_george.bin'
           APK_SIZE=$(stat -c%s "$APK")
           echo "Taille APK : $APK_SIZE octets"
           test "$APK_SIZE" -gt 83886080
@@ -87,6 +91,6 @@ jobs:
       - name: Publier l APK Kokoro complet
         uses: actions/upload-artifact@v4
         with:
-          name: Quiz-Anglais-v3.5.2-Kokoro-OFFLINE
+          name: Quiz-Anglais-v3.5.3-Kokoro-6-VOIX
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
