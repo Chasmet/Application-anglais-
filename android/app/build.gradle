@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 15
-        versionName '3.5.3'
+        versionCode 16
+        versionName '3.6.0'
     }
 
     buildTypes {
@@ -42,6 +42,8 @@ tasks.register('syncWebAssets', Copy) {
                 'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
                 'lessons.js', 'phrases-extra.js', 'activities-extra.js', 'content-ultra.js',
                 'corrections-plus.js',
+                'academie.html', 'academie.js',
+                'chiffres.html', 'chiffres.js',
                 'vocabulaire.html', 'vocabulaire.js',
                 'grammaire.html', 'grammaire.js', 'grammaire-ux.js', 'grammaire-ux.css', 'grammar-data.js',
                 'verb-pronunciation.js', 'french-verb-data.js',
