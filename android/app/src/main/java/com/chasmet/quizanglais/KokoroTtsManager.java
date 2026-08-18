@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 
 public final class KokoroTtsManager {
     private static final String MODEL_URL = "https://huggingface.co/hexgrad/Kokoro-82M/resolve/e6a2633a608163a6383195168a1abf0c4b8aeaa7/kokoro-v0_19.onnx?download=true";
+    private static final String MODEL_ASSET = "kokoro-model/kokoro-v0_19.onnx";
     private static final String MODEL_NAME = "kokoro-v0_19.onnx";
     private static final long MIN_MODEL_BYTES = 300L * 1024L * 1024L;
 
@@ -40,10 +41,13 @@ public final class KokoroTtsManager {
         preparing = true;
         worker.execute(() -> {
             try {
-                File model = new File(context.getExternalFilesDir(null), MODEL_NAME);
+                File model = new File(context.getFilesDir(), MODEL_NAME);
                 if (!model.exists() || model.length() < MIN_MODEL_BYTES) {
-                    status = "Kokoro : téléchargement du modèle";
-                    downloadModel(model);
+                    status = "Kokoro : installation du modèle intégré";
+                    if (!copyBundledModel(model)) {
+                        status = "Kokoro : téléchargement du modèle";
+                        downloadModel(model);
+                    }
                 }
                 status = "Kokoro : initialisation";
                 initialize(model);
@@ -53,6 +57,30 @@ public final class KokoroTtsManager {
                 preparing = false;
             }
         });
+    }
+
+    private boolean copyBundledModel(File target) {
+        File temp = new File(target.getAbsolutePath() + ".part");
+        try {
+            if (temp.exists()) temp.delete();
+            try (InputStream input = new BufferedInputStream(context.getAssets().open(MODEL_ASSET));
+                 FileOutputStream output = new FileOutputStream(temp)) {
+                byte[] buffer = new byte[1024 * 1024];
+                int read;
+                while ((read = input.read(buffer)) != -1) output.write(buffer, 0, read);
+                output.getFD().sync();
+            }
+            if (temp.length() < MIN_MODEL_BYTES) {
+                temp.delete();
+                return false;
+            }
+            if (target.exists()) target.delete();
+            if (!temp.renameTo(target)) throw new IllegalStateException("Impossible d'installer le modèle intégré");
+            return true;
+        } catch (Throwable error) {
+            if (temp.exists()) temp.delete();
+            return false;
+        }
     }
 
     public boolean speak(String text, float rate) {
@@ -93,7 +121,7 @@ public final class KokoroTtsManager {
         connection.setConnectTimeout(20000);
         connection.setReadTimeout(45000);
         connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty("User-Agent", "QuizAnglais-Kokoro/3.5");
+        connection.setRequestProperty("User-Agent", "QuizAnglais-Kokoro/3.5.1");
         int code = connection.getResponseCode();
         if (code < 200 || code >= 300) throw new IllegalStateException("HTTP " + code);
 
