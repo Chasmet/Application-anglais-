@@ -1,8 +1,8 @@
-const CACHE_NAME='quiz-anglais-v10';
+const CACHE_NAME='quiz-anglais-v11';
 const FILES=[
   './','./index.html','./quiz.html','./style.css','./app.js',
   './words.js','./words-debutant.js','./words-moyen.js','./words-confirme.js',
-  './lessons.js','./phrases-extra.js','./activities-extra.js',
+  './lessons.js','./phrases-extra.js','./activities-extra.js','./content-ultra.js','./corrections-plus.js',
   './vocabulaire.html','./vocabulaire.js',
   './grammaire.html','./grammaire.js','./grammaire-ux.js','./grammaire-ux.css','./grammar-data.js',
   './verb-pronunciation.js','./french-verb-data.js',
