@@ -76,10 +76,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             Locale locale = voice.getLocale();
             if (locale == null || !"en".equalsIgnoreCase(locale.getLanguage())) continue;
 
-            int score = 0;
-            score += voice.getQuality() * 25;
-            score -= voice.getLatency() * 3;
-
+            int score = voice.getQuality() * 25 - voice.getLatency() * 3;
             String country = locale.getCountry();
             if ("US".equalsIgnoreCase(country)) score += 70;
             else if ("GB".equalsIgnoreCase(country)) score += 55;
@@ -118,6 +115,16 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             if (text == null || text.trim().isEmpty()) return;
             if (kokoro != null && kokoro.speak(text, rate)) return;
             speakFallback(text, rate);
+        }
+
+        @JavascriptInterface
+        public boolean setVoice(final String voiceId) {
+            return kokoro != null && kokoro.setVoice(voiceId);
+        }
+
+        @JavascriptInterface
+        public String getSelectedVoiceId() {
+            return kokoro == null ? "af_heart" : kokoro.getSelectedVoiceId();
         }
 
         @JavascriptInterface
