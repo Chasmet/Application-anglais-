@@ -23,9 +23,16 @@ jobs:
         run: |
           for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js sw.js; do node --check "$f"; done
           node -e "global.window={};require('./adult-scenarios-160.js');if(window.ADULT_ORAL_SCENARIOS.length!==160)throw new Error('Il faut exactement 160 situations');console.log('Situations orales:',window.ADULT_ORAL_SCENARIOS.length)"
-      - name: Vérifier Kokoro
+          grep -q 'onNativeTtsFinished' adult-oral.js
+          grep -q 'AndroidTTS.preload' adult-oral.js
+          ! grep -q 'split(/\\s+/).length\*330' adult-oral.js
+      - name: Vérifier Kokoro et faible latence
         working-directory: android
-        run: gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath
+        run: |
+          gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath
+          grep -q 'setOnPlaybackCompleteListener' app/src/main/java/com/chasmet/quizanglais/KokoroTtsManager.java
+          grep -q 'EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 450L' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
+          grep -q 'public boolean preload' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
       - name: Construire APK
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
@@ -40,6 +47,6 @@ jobs:
       - name: Publier APK
         uses: actions/upload-artifact@v4
         with:
-          name: Anglais-Plus-v3.8.0-ADULTE-ORAL-160-SITUATIONS
+          name: Anglais-Plus-v3.8.1-ORAL-FAIBLE-LATENCE
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

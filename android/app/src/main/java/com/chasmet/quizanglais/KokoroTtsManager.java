@@ -31,6 +31,7 @@ public final class KokoroTtsManager {
     private volatile String status = "Kokoro : préparation";
     private volatile String selectedVoiceId;
     private volatile String selectedLanguage = "en_US";
+    private volatile Runnable playbackCompleteListener;
 
     private Tts tts;
     private Voice selectedVoice;
@@ -40,6 +41,15 @@ public final class KokoroTtsManager {
         this.context = context.getApplicationContext();
         this.prefs = this.context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         this.selectedVoiceId = prefs.getString(PREF_VOICE_ID, DEFAULT_VOICE);
+    }
+
+    public void setOnPlaybackCompleteListener(Runnable listener) {
+        playbackCompleteListener = listener;
+    }
+
+    private void notifyPlaybackComplete() {
+        Runnable listener = playbackCompleteListener;
+        if (listener != null) main.post(listener);
     }
 
     public void prepare() {
@@ -100,67 +110,112 @@ public final class KokoroTtsManager {
         return selectedVoiceId;
     }
 
+    private File cacheFile(String text, float rate) {
+        String key = selectedVoiceId + "|" + Math.round(rate * 100f) + "|" + text;
+        return new File(context.getCacheDir(), "kokoro-" + Integer.toHexString(key.hashCode()) + ".wav");
+    }
+
+    private File synthesizeToCache(String text, float rate) throws Exception {
+        File audio = cacheFile(text, rate);
+        if (audio.exists() && audio.length() > 44) return audio;
+        float speed = Math.max(0.60f, Math.min(rate / 0.82f, 1.15f));
+        Voice voice = selectedVoice;
+        String lang = selectedLanguage;
+        byte[] wav = tts.synthesizeToWav(text, lang, voice, speed, 100, 70);
+        try (FileOutputStream out = new FileOutputStream(audio)) {
+            out.write(wav);
+            out.flush();
+        }
+        return audio;
+    }
+
+    public boolean preload(String text, float rate) {
+        if (text == null || text.trim().isEmpty()) return false;
+        if (!ready || tts == null) {
+            prepare();
+            return false;
+        }
+        File cached = cacheFile(text, rate);
+        if (cached.exists() && cached.length() > 44) return true;
+        worker.execute(() -> {
+            try { synthesizeToCache(text, rate); } catch (Throwable ignored) { }
+        });
+        return true;
+    }
+
     public boolean speak(String text, float rate) {
         if (text == null || text.trim().isEmpty()) return false;
         if (!ready || tts == null) {
             prepare();
             return false;
         }
-        worker.execute(() -> synthesize(text, rate));
+        File cached = cacheFile(text, rate);
+        if (cached.exists() && cached.length() > 44) {
+            main.post(() -> playFile(cached));
+            return true;
+        }
+        worker.execute(() -> {
+            try {
+                File audio = synthesizeToCache(text, rate);
+                main.post(() -> playFile(audio));
+            } catch (Throwable error) {
+                ready = false;
+                status = "Kokoro : erreur de synthèse — voix Android utilisée";
+                notifyPlaybackComplete();
+            }
+        });
         return true;
     }
 
-    public boolean isReady() {
-        return ready;
+    public boolean isReady() { return ready; }
+
+    public boolean isSpeaking() {
+        MediaPlayer current = player;
+        try { return current != null && current.isPlaying(); }
+        catch (Throwable ignored) { return false; }
     }
 
     public String getStatus() {
         return ready ? "Kokoro-82M • " + selectedVoiceId + " • hors ligne" : status;
     }
 
-    private void synthesize(String text, float rate) {
-        try {
-            float speed = Math.max(0.60f, Math.min(rate / 0.82f, 1.15f));
-            Voice voice = selectedVoice;
-            String lang = selectedLanguage;
-            byte[] wav = tts.synthesizeToWav(text, lang, voice, speed, 100, 70);
-            File audio = new File(context.getCacheDir(), "kokoro-last.wav");
-            try (FileOutputStream out = new FileOutputStream(audio)) {
-                out.write(wav);
-                out.flush();
-            }
-            main.post(() -> playFile(audio));
-        } catch (Throwable error) {
-            ready = false;
-            status = "Kokoro : erreur de synthèse — voix Android utilisée";
-        }
-    }
-
     private void playFile(File file) {
-        stopPlayer();
+        stopPlayer(false);
         try {
             player = new MediaPlayer();
             player.setDataSource(file.getAbsolutePath());
-            player.setOnCompletionListener(mp -> stopPlayer());
+            player.setOnCompletionListener(mp -> {
+                stopPlayer(false);
+                notifyPlaybackComplete();
+            });
+            player.setOnErrorListener((mp, what, extra) -> {
+                stopPlayer(false);
+                notifyPlaybackComplete();
+                return true;
+            });
             player.prepare();
             player.start();
         } catch (Exception error) {
-            stopPlayer();
+            stopPlayer(false);
             ready = false;
             status = "Kokoro : erreur audio — voix Android utilisée";
+            notifyPlaybackComplete();
         }
     }
 
-    private void stopPlayer() {
-        if (player == null) return;
-        try { player.stop(); } catch (Exception ignored) { }
-        try { player.release(); } catch (Exception ignored) { }
-        player = null;
+    private void stopPlayer(boolean notify) {
+        if (player != null) {
+            try { player.stop(); } catch (Exception ignored) { }
+            try { player.release(); } catch (Exception ignored) { }
+            player = null;
+        }
+        if (notify) notifyPlaybackComplete();
     }
 
     public void release() {
         ready = false;
-        main.post(this::stopPlayer);
+        playbackCompleteListener = null;
+        main.post(() -> stopPlayer(false));
         tts = null;
         selectedVoice = null;
         worker.shutdownNow();
