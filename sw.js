@@ -1,6 +1,8 @@
-const CACHE_NAME='quiz-anglais-v12';
+const CACHE_NAME='quiz-anglais-v13';
 const FILES=[
-  './','./index.html','./quiz.html','./style.css','./app.js',
+  './','./index.html','./classic.html',
+  './adult.html','./adult-conversation.html','./adult-training.html','./adult.css','./adult-data.js','./adult-conversation.js','./adult-training.js',
+  './quiz.html','./style.css','./app.js',
   './words.js','./words-debutant.js','./words-moyen.js','./words-confirme.js',
   './lessons.js','./phrases-extra.js','./activities-extra.js','./content-ultra.js','./corrections-plus.js',
   './academie.html','./academie.js','./chiffres.html','./chiffres.js',
