@@ -31,6 +31,7 @@ public final class KokoroTtsManager {
     private volatile String status = "Kokoro : préparation";
     private volatile String selectedVoiceId;
     private volatile String selectedLanguage = "en_US";
+    private volatile Runnable playbackCompleteListener;
 
     private Tts tts;
     private Voice selectedVoice;
@@ -40,6 +41,15 @@ public final class KokoroTtsManager {
         this.context = context.getApplicationContext();
         this.prefs = this.context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         this.selectedVoiceId = prefs.getString(PREF_VOICE_ID, DEFAULT_VOICE);
+    }
+
+    public void setOnPlaybackCompleteListener(Runnable listener) {
+        playbackCompleteListener = listener;
+    }
+
+    private void notifyPlaybackComplete() {
+        Runnable listener = playbackCompleteListener;
+        if (listener != null) main.post(listener);
     }
 
     public void prepare() {
@@ -114,6 +124,15 @@ public final class KokoroTtsManager {
         return ready;
     }
 
+    public boolean isSpeaking() {
+        MediaPlayer current = player;
+        try {
+            return current != null && current.isPlaying();
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     public String getStatus() {
         return ready ? "Kokoro-82M • " + selectedVoiceId + " • hors ligne" : status;
     }
@@ -133,34 +152,47 @@ public final class KokoroTtsManager {
         } catch (Throwable error) {
             ready = false;
             status = "Kokoro : erreur de synthèse — voix Android utilisée";
+            notifyPlaybackComplete();
         }
     }
 
     private void playFile(File file) {
-        stopPlayer();
+        stopPlayer(false);
         try {
             player = new MediaPlayer();
             player.setDataSource(file.getAbsolutePath());
-            player.setOnCompletionListener(mp -> stopPlayer());
+            player.setOnCompletionListener(mp -> {
+                stopPlayer(false);
+                notifyPlaybackComplete();
+            });
+            player.setOnErrorListener((mp, what, extra) -> {
+                stopPlayer(false);
+                notifyPlaybackComplete();
+                return true;
+            });
             player.prepare();
             player.start();
         } catch (Exception error) {
-            stopPlayer();
+            stopPlayer(false);
             ready = false;
             status = "Kokoro : erreur audio — voix Android utilisée";
+            notifyPlaybackComplete();
         }
     }
 
-    private void stopPlayer() {
-        if (player == null) return;
-        try { player.stop(); } catch (Exception ignored) { }
-        try { player.release(); } catch (Exception ignored) { }
-        player = null;
+    private void stopPlayer(boolean notify) {
+        if (player != null) {
+            try { player.stop(); } catch (Exception ignored) { }
+            try { player.release(); } catch (Exception ignored) { }
+            player = null;
+        }
+        if (notify) notifyPlaybackComplete();
     }
 
     public void release() {
         ready = false;
-        main.post(this::stopPlayer);
+        playbackCompleteListener = null;
+        main.post(() -> stopPlayer(false));
         tts = null;
         selectedVoice = null;
         worker.shutdownNow();
