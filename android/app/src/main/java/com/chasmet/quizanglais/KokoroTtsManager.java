@@ -110,50 +110,73 @@ public final class KokoroTtsManager {
         return selectedVoiceId;
     }
 
+    private File cacheFile(String text, float rate) {
+        String key = selectedVoiceId + "|" + Math.round(rate * 100f) + "|" + text;
+        return new File(context.getCacheDir(), "kokoro-" + Integer.toHexString(key.hashCode()) + ".wav");
+    }
+
+    private File synthesizeToCache(String text, float rate) throws Exception {
+        File audio = cacheFile(text, rate);
+        if (audio.exists() && audio.length() > 44) return audio;
+        float speed = Math.max(0.60f, Math.min(rate / 0.82f, 1.15f));
+        Voice voice = selectedVoice;
+        String lang = selectedLanguage;
+        byte[] wav = tts.synthesizeToWav(text, lang, voice, speed, 100, 70);
+        try (FileOutputStream out = new FileOutputStream(audio)) {
+            out.write(wav);
+            out.flush();
+        }
+        return audio;
+    }
+
+    public boolean preload(String text, float rate) {
+        if (text == null || text.trim().isEmpty()) return false;
+        if (!ready || tts == null) {
+            prepare();
+            return false;
+        }
+        File cached = cacheFile(text, rate);
+        if (cached.exists() && cached.length() > 44) return true;
+        worker.execute(() -> {
+            try { synthesizeToCache(text, rate); } catch (Throwable ignored) { }
+        });
+        return true;
+    }
+
     public boolean speak(String text, float rate) {
         if (text == null || text.trim().isEmpty()) return false;
         if (!ready || tts == null) {
             prepare();
             return false;
         }
-        worker.execute(() -> synthesize(text, rate));
+        File cached = cacheFile(text, rate);
+        if (cached.exists() && cached.length() > 44) {
+            main.post(() -> playFile(cached));
+            return true;
+        }
+        worker.execute(() -> {
+            try {
+                File audio = synthesizeToCache(text, rate);
+                main.post(() -> playFile(audio));
+            } catch (Throwable error) {
+                ready = false;
+                status = "Kokoro : erreur de synthèse — voix Android utilisée";
+                notifyPlaybackComplete();
+            }
+        });
         return true;
     }
 
-    public boolean isReady() {
-        return ready;
-    }
+    public boolean isReady() { return ready; }
 
     public boolean isSpeaking() {
         MediaPlayer current = player;
-        try {
-            return current != null && current.isPlaying();
-        } catch (Throwable ignored) {
-            return false;
-        }
+        try { return current != null && current.isPlaying(); }
+        catch (Throwable ignored) { return false; }
     }
 
     public String getStatus() {
         return ready ? "Kokoro-82M • " + selectedVoiceId + " • hors ligne" : status;
-    }
-
-    private void synthesize(String text, float rate) {
-        try {
-            float speed = Math.max(0.60f, Math.min(rate / 0.82f, 1.15f));
-            Voice voice = selectedVoice;
-            String lang = selectedLanguage;
-            byte[] wav = tts.synthesizeToWav(text, lang, voice, speed, 100, 70);
-            File audio = new File(context.getCacheDir(), "kokoro-last.wav");
-            try (FileOutputStream out = new FileOutputStream(audio)) {
-                out.write(wav);
-                out.flush();
-            }
-            main.post(() -> playFile(audio));
-        } catch (Throwable error) {
-            ready = false;
-            status = "Kokoro : erreur de synthèse — voix Android utilisée";
-            notifyPlaybackComplete();
-        }
     }
 
     private void playFile(File file) {
