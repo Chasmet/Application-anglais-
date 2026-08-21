@@ -230,6 +230,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
 
         @JavascriptInterface
+        public boolean preload(final String text, final float rate) {
+            return kokoro != null && kokoro.preload(text, rate);
+        }
+
+        @JavascriptInterface
         public boolean setVoice(final String voiceId) {
             return kokoro != null && kokoro.setVoice(voiceId);
         }
