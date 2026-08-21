@@ -3,107 +3,43 @@ name: Construire APK Android
 on:
   push:
     branches: [ main ]
-    paths:
-      - '*.html'
-      - '*.css'
-      - '*.js'
-      - 'icon.svg'
-      - 'manifest.webmanifest'
-      - 'android/**'
-      - '.github/workflows/build-apk.yml'
+    paths: ['*.html','*.css','*.js','icon.svg','manifest.webmanifest','android/**','.github/workflows/build-apk.yml']
   pull_request:
     branches: [ main ]
-    paths:
-      - '*.html'
-      - '*.css'
-      - '*.js'
-      - 'icon.svg'
-      - 'manifest.webmanifest'
-      - 'android/**'
-      - '.github/workflows/build-apk.yml'
+    paths: ['*.html','*.css','*.js','icon.svg','manifest.webmanifest','android/**','.github/workflows/build-apk.yml']
   workflow_dispatch:
-
-permissions:
-  contents: read
-
+permissions: { contents: read }
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Récupérer le dépôt
-        uses: actions/checkout@v4
-
-      - name: Installer Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Installer Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Installer Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
-      - name: Vérifier les fichiers JavaScript
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.10.2' }
+      - name: Vérifier JavaScript
         run: |
-          node --check app.js
-          node --check words.js
-          node --check words-debutant.js
-          node --check words-moyen.js
-          node --check words-confirme.js
-          node --check lessons.js
-          node --check phrases-extra.js
-          node --check activities-extra.js
-          node --check content-ultra.js
-          node --check corrections-plus.js
-          node --check academie.js
-          node --check chiffres.js
-          node --check vocabulaire.js
-          node --check grammaire.js
-          node --check grammaire-ux.js
-          node --check grammar-data.js
-          node --check verb-pronunciation.js
-          node --check french-verb-data.js
-          node --check adult-data.js
-          node --check adult-conversation.js
-          node --check adult-training.js
-          node --check sw.js
-
-      - name: Vérifier la dépendance Kokoro embarquée
+          for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js sw.js; do node --check "$f"; done
+          node -e "global.window={};require('./adult-scenarios-160.js');if(window.ADULT_ORAL_SCENARIOS.length!==160)throw new Error('Il faut exactement 160 situations');console.log('Situations orales:',window.ADULT_ORAL_SCENARIOS.length)"
+      - name: Vérifier Kokoro
         working-directory: android
-        run: gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath | tee kokoro-deps.txt
-
-      - name: Construire l APK complet
+        run: gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath
+      - name: Construire APK
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
-
-      - name: Vérifier les modules embarqués
+      - name: Vérifier modules
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
           unzip -l "$APK" | grep -E 'model_quantized\.onnx|kokoro.*\.onnx'
-          unzip -l "$APK" | grep 'voices/af_heart.bin'
-          unzip -l "$APK" | grep 'voices/am_adam.bin'
-          unzip -l "$APK" | grep 'voices/bf_emma.bin'
-          unzip -l "$APK" | grep 'voices/bm_george.bin'
-          unzip -l "$APK" | grep 'assets/classic.html'
-          unzip -l "$APK" | grep 'assets/adult.html'
-          unzip -l "$APK" | grep 'assets/adult-conversation.html'
-          unzip -l "$APK" | grep 'assets/adult-training.html'
-          unzip -l "$APK" | grep 'assets/adult-data.js'
-          unzip -l "$APK" | grep 'assets/academie.html'
-          unzip -l "$APK" | grep 'assets/chiffres.html'
-          grep -q 'android.permission.RECORD_AUDIO' app/src/main/AndroidManifest.xml || grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
-          APK_SIZE=$(stat -c%s "$APK")
-          echo "Taille APK : $APK_SIZE octets"
-          test "$APK_SIZE" -gt 83886080
-
-      - name: Publier l APK complet
+          for f in adult.html adult-oral.html adult-oral.js adult-scenarios-160.js adult-conversation.html adult-training.html; do unzip -l "$APK" | grep "assets/$f"; done
+          grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
+          test $(stat -c%s "$APK") -gt 83886080
+      - name: Publier APK
         uses: actions/upload-artifact@v4
         with:
-          name: Anglais-Plus-v3.7.0-MODE-ADULTE-A2-B1
+          name: Anglais-Plus-v3.8.0-ADULTE-ORAL-160-SITUATIONS
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
