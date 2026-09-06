@@ -28,16 +28,20 @@ import java.util.Set;
 public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
     private static final int REQUEST_RECORD_AUDIO = 41;
     private static final String TTS_UTTERANCE_ID = "quiz-english";
+    private static final String TTS_FRENCH_UTTERANCE_ID = "quiz-french";
 
     private WebView webView;
     private TextToSpeech textToSpeech;
+    private TextToSpeech frenchTextToSpeech;
     private KokoroTtsManager kokoro;
     private SpeechRecognizer speechRecognizer;
     private UpdateManager updateManager;
     private String pendingRecognitionLang = "en-US";
     private boolean ttsReady = false;
+    private boolean frenchTtsReady = false;
     private boolean recognitionBusy = false;
     private String activeVoiceName = "Voix anglaise système";
+    private String activeFrenchVoiceName = "Voix française système";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -47,6 +51,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         setContentView(R.layout.activity_main);
 
         textToSpeech = new TextToSpeech(this, this);
+        frenchTextToSpeech = new TextToSpeech(this, status -> initFrenchTts(status));
         kokoro = new KokoroTtsManager(this);
         kokoro.setOnPlaybackCompleteListener(this::sendTtsFinished);
         kokoro.prepare();
@@ -89,6 +94,22 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
 
+    private void initFrenchTts(int status) {
+        if (status != TextToSpeech.SUCCESS || frenchTextToSpeech == null) return;
+        int result = frenchTextToSpeech.setLanguage(Locale.FRANCE);
+        frenchTtsReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED;
+        if (frenchTtsReady) {
+            selectBestFrenchVoice();
+            frenchTextToSpeech.setPitch(1.0f);
+            frenchTextToSpeech.setSpeechRate(0.94f);
+            frenchTextToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override public void onStart(String utteranceId) { }
+                @Override public void onDone(String utteranceId) { if (TTS_FRENCH_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished(); }
+                @Override public void onError(String utteranceId) { if (TTS_FRENCH_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished(); }
+            });
+        }
+    }
+
     private void selectBestEnglishVoice() {
         Set<Voice> voices = textToSpeech.getVoices();
         if (voices == null || voices.isEmpty()) return;
@@ -109,6 +130,26 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         if (bestVoice != null && textToSpeech.setVoice(bestVoice) == TextToSpeech.SUCCESS) activeVoiceName = bestVoice.getName();
     }
 
+    private void selectBestFrenchVoice() {
+        Set<Voice> voices = frenchTextToSpeech.getVoices();
+        if (voices == null || voices.isEmpty()) return;
+        Voice bestVoice = null;
+        int bestScore = Integer.MIN_VALUE;
+        for (Voice voice : voices) {
+            Locale locale = voice.getLocale();
+            if (locale == null || !"fr".equalsIgnoreCase(locale.getLanguage())) continue;
+            int score = voice.getQuality() * 25 - voice.getLatency() * 3;
+            String country = locale.getCountry();
+            if ("FR".equalsIgnoreCase(country)) score += 90; else if ("BE".equalsIgnoreCase(country) || "CA".equalsIgnoreCase(country) || "CH".equalsIgnoreCase(country)) score += 45; else score += 20;
+            if (!voice.isNetworkConnectionRequired()) score += 45;
+            String name = voice.getName() == null ? "" : voice.getName().toLowerCase(Locale.FRANCE);
+            if (name.contains("enhanced") || name.contains("premium") || name.contains("high")) score += 35;
+            if (name.contains("compact") || name.contains("low")) score -= 15;
+            if (score > bestScore) { bestScore = score; bestVoice = voice; }
+        }
+        if (bestVoice != null && frenchTextToSpeech.setVoice(bestVoice) == TextToSpeech.SUCCESS) activeFrenchVoiceName = bestVoice.getName();
+    }
+
     private void speakFallback(String text, float rate) {
         runOnUiThread(() -> {
             if (!ttsReady || text == null || text.trim().isEmpty()) { sendTtsFinished(); return; }
@@ -116,6 +157,19 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             textToSpeech.setSpeechRate(Math.max(0.35f, Math.min(rate, 1.25f)));
             textToSpeech.setPitch(1.0f);
             textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, TTS_UTTERANCE_ID);
+        });
+    }
+
+    private void speakFrench(String text, float rate) {
+        runOnUiThread(() -> {
+            if (!frenchTtsReady || frenchTextToSpeech == null || text == null || text.trim().isEmpty()) { sendTtsFinished(); return; }
+            if (textToSpeech != null) textToSpeech.stop();
+            if (kokoro != null) kokoro.stop();
+            frenchTextToSpeech.stop();
+            frenchTextToSpeech.setLanguage(Locale.FRANCE);
+            frenchTextToSpeech.setSpeechRate(Math.max(0.45f, Math.min(rate, 1.20f)));
+            frenchTextToSpeech.setPitch(1.0f);
+            frenchTextToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, TTS_FRENCH_UTTERANCE_ID);
         });
     }
 
@@ -198,7 +252,16 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     public final class TtsBridge {
         @JavascriptInterface public void speak(final String text, final float rate) {
+            speakWithLanguage(text, rate, "en-US");
+        }
+        @JavascriptInterface public void speakWithLanguage(final String text, final float rate, final String language) {
             if (text == null || text.trim().isEmpty()) { sendTtsFinished(); return; }
+            String lang = language == null ? "en-US" : language;
+            if (lang.toLowerCase(Locale.ROOT).startsWith("fr")) {
+                speakFrench(text, rate);
+                return;
+            }
+            if (frenchTextToSpeech != null) frenchTextToSpeech.stop();
             if (kokoro != null && kokoro.speak(text, rate)) return;
             speakFallback(text, rate);
         }
@@ -206,6 +269,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         @JavascriptInterface public boolean setVoice(final String voiceId) { return kokoro != null && kokoro.setVoice(voiceId); }
         @JavascriptInterface public String getSelectedVoiceId() { return kokoro == null ? "af_heart" : kokoro.getSelectedVoiceId(); }
         @JavascriptInterface public String getVoiceName() { return kokoro != null && kokoro.isReady() ? kokoro.getStatus() : activeVoiceName + " • " + (kokoro == null ? "Kokoro indisponible" : kokoro.getStatus()); }
+        @JavascriptInterface public String getFrenchVoiceName() { return activeFrenchVoiceName; }
+        @JavascriptInterface public boolean isFrenchReady() { return frenchTtsReady; }
         @JavascriptInterface public boolean isKokoroReady() { return kokoro != null && kokoro.isReady(); }
         @JavascriptInterface public boolean isSpeaking() { return kokoro != null && kokoro.isSpeaking(); }
     }
@@ -255,6 +320,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             webView.destroy();
         }
         if (kokoro != null) kokoro.release();
+        if (frenchTextToSpeech != null) { frenchTextToSpeech.stop(); frenchTextToSpeech.shutdown(); }
         if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); }
         super.onDestroy();
     }
