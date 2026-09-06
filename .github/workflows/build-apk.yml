@@ -23,6 +23,27 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.10.2' }
 
+      - name: Préparer signature Android stable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$HOME/.android"
+          KEYSTORE="$HOME/.android/debug.keystore"
+          SIGNING_TAG="android-signing-key-v1"
+          rm -f "$KEYSTORE"
+          if gh release view "$SIGNING_TAG" >/dev/null 2>&1; then
+            echo "Réutilisation de la clé Android permanente"
+            gh release download "$SIGNING_TAG" -p 'stable-debug.keystore' -O "$KEYSTORE"
+          else
+            echo "Création initiale de la clé Android permanente"
+            keytool -genkeypair -keystore "$KEYSTORE" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Chasmet,C=FR'
+            if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
+              cp "$KEYSTORE" /tmp/stable-debug.keystore
+              gh release create "$SIGNING_TAG" /tmp/stable-debug.keystore --title 'Clé Android permanente v1' --notes 'Clé de signature publique utilisée pour conserver la même signature entre toutes les APK Anglais+.' --prerelease
+            fi
+          fi
+          keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey | grep 'SHA256:' | tee /tmp/signing-cert.txt
+
       - name: Vérifier JavaScript
         run: |
           for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js passive-oral.js settings.js sw.js; do node --check "$f"; done
@@ -48,7 +69,7 @@ jobs:
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
 
-      - name: Vérifier contenu APK
+      - name: Vérifier contenu et signature APK
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
@@ -57,6 +78,9 @@ jobs:
           grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
           grep -q 'android.permission.REQUEST_INSTALL_PACKAGES' android/app/src/main/AndroidManifest.xml
           test $(stat -c%s "$APK") -gt 83886080
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee /tmp/apk-signature.txt
+          grep -q 'Signer #1 certificate SHA-256 digest:' /tmp/apk-signature.txt
 
       - name: Préparer APK nommé
         run: |
