@@ -43,9 +43,7 @@ public final class KokoroTtsManager {
         this.selectedVoiceId = prefs.getString(PREF_VOICE_ID, DEFAULT_VOICE);
     }
 
-    public void setOnPlaybackCompleteListener(Runnable listener) {
-        playbackCompleteListener = listener;
-    }
+    public void setOnPlaybackCompleteListener(Runnable listener) { playbackCompleteListener = listener; }
 
     private void notifyPlaybackComplete() {
         Runnable listener = playbackCompleteListener;
@@ -75,9 +73,8 @@ public final class KokoroTtsManager {
         if (tts == null) return;
         VoiceCatalog catalog = tts.getVoices();
         if (catalog == null) return;
-        try {
-            selectedVoice = catalog.get(selectedVoiceId);
-        } catch (Throwable missing) {
+        try { selectedVoice = catalog.get(selectedVoiceId); }
+        catch (Throwable missing) {
             selectedVoiceId = DEFAULT_VOICE;
             selectedVoice = catalog.get(DEFAULT_VOICE);
             prefs.edit().putString(PREF_VOICE_ID, DEFAULT_VOICE).apply();
@@ -89,10 +86,7 @@ public final class KokoroTtsManager {
         if (voiceId == null || voiceId.trim().isEmpty()) return false;
         selectedVoiceId = voiceId.trim();
         prefs.edit().putString(PREF_VOICE_ID, selectedVoiceId).apply();
-        if (!ready || tts == null) {
-            prepare();
-            return true;
-        }
+        if (!ready || tts == null) { prepare(); return true; }
         try {
             VoiceCatalog catalog = tts.getVoices();
             if (catalog == null) return false;
@@ -101,14 +95,10 @@ public final class KokoroTtsManager {
             selectedLanguage = voice.getLang();
             status = "Kokoro — " + selectedVoiceId + " — prêt hors ligne";
             return true;
-        } catch (Throwable error) {
-            return false;
-        }
+        } catch (Throwable error) { return false; }
     }
 
-    public String getSelectedVoiceId() {
-        return selectedVoiceId;
-    }
+    public String getSelectedVoiceId() { return selectedVoiceId; }
 
     private File cacheFile(String text, float rate) {
         String key = selectedVoiceId + "|" + Math.round(rate * 100f) + "|" + text;
@@ -122,38 +112,24 @@ public final class KokoroTtsManager {
         Voice voice = selectedVoice;
         String lang = selectedLanguage;
         byte[] wav = tts.synthesizeToWav(text, lang, voice, speed, 100, 70);
-        try (FileOutputStream out = new FileOutputStream(audio)) {
-            out.write(wav);
-            out.flush();
-        }
+        try (FileOutputStream out = new FileOutputStream(audio)) { out.write(wav); out.flush(); }
         return audio;
     }
 
     public boolean preload(String text, float rate) {
         if (text == null || text.trim().isEmpty()) return false;
-        if (!ready || tts == null) {
-            prepare();
-            return false;
-        }
+        if (!ready || tts == null) { prepare(); return false; }
         File cached = cacheFile(text, rate);
         if (cached.exists() && cached.length() > 44) return true;
-        worker.execute(() -> {
-            try { synthesizeToCache(text, rate); } catch (Throwable ignored) { }
-        });
+        worker.execute(() -> { try { synthesizeToCache(text, rate); } catch (Throwable ignored) { } });
         return true;
     }
 
     public boolean speak(String text, float rate) {
         if (text == null || text.trim().isEmpty()) return false;
-        if (!ready || tts == null) {
-            prepare();
-            return false;
-        }
+        if (!ready || tts == null) { prepare(); return false; }
         File cached = cacheFile(text, rate);
-        if (cached.exists() && cached.length() > 44) {
-            main.post(() -> playFile(cached));
-            return true;
-        }
+        if (cached.exists() && cached.length() > 44) { main.post(() -> playFile(cached)); return true; }
         worker.execute(() -> {
             try {
                 File audio = synthesizeToCache(text, rate);
@@ -167,6 +143,7 @@ public final class KokoroTtsManager {
         return true;
     }
 
+    public void stop() { main.post(() -> stopPlayer(false)); }
     public boolean isReady() { return ready; }
 
     public boolean isSpeaking() {
@@ -175,24 +152,15 @@ public final class KokoroTtsManager {
         catch (Throwable ignored) { return false; }
     }
 
-    public String getStatus() {
-        return ready ? "Kokoro-82M • " + selectedVoiceId + " • hors ligne" : status;
-    }
+    public String getStatus() { return ready ? "Kokoro-82M • " + selectedVoiceId + " • hors ligne" : status; }
 
     private void playFile(File file) {
         stopPlayer(false);
         try {
             player = new MediaPlayer();
             player.setDataSource(file.getAbsolutePath());
-            player.setOnCompletionListener(mp -> {
-                stopPlayer(false);
-                notifyPlaybackComplete();
-            });
-            player.setOnErrorListener((mp, what, extra) -> {
-                stopPlayer(false);
-                notifyPlaybackComplete();
-                return true;
-            });
+            player.setOnCompletionListener(mp -> { stopPlayer(false); notifyPlaybackComplete(); });
+            player.setOnErrorListener((mp, what, extra) -> { stopPlayer(false); notifyPlaybackComplete(); return true; });
             player.prepare();
             player.start();
         } catch (Exception error) {
