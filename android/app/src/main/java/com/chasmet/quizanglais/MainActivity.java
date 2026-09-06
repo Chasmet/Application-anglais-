@@ -33,6 +33,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private TextToSpeech textToSpeech;
     private KokoroTtsManager kokoro;
     private SpeechRecognizer speechRecognizer;
+    private UpdateManager updateManager;
     private String pendingRecognitionLang = "en-US";
     private boolean ttsReady = false;
     private boolean recognitionBusy = false;
@@ -63,29 +64,27 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
+        updateManager = new UpdateManager(this, webView);
         webView.addJavascriptInterface(new TtsBridge(), "AndroidTTS");
         webView.addJavascriptInterface(new SpeechBridge(), "AndroidSpeech");
+        webView.addJavascriptInterface(new UpdateBridge(), "AndroidUpdater");
         webView.loadUrl("file:///android_asset/index.html");
+        webView.postDelayed(() -> { if (updateManager != null) updateManager.autoCheck(); }, 1800);
     }
 
     @Override
     public void onInit(int status) {
         if (status != TextToSpeech.SUCCESS) return;
         int result = textToSpeech.setLanguage(Locale.US);
-        ttsReady = result != TextToSpeech.LANG_MISSING_DATA
-                && result != TextToSpeech.LANG_NOT_SUPPORTED;
+        ttsReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED;
         if (ttsReady) {
             selectBestEnglishVoice();
             textToSpeech.setPitch(1.0f);
             textToSpeech.setSpeechRate(0.82f);
             textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                 @Override public void onStart(String utteranceId) { }
-                @Override public void onDone(String utteranceId) {
-                    if (TTS_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished();
-                }
-                @Override public void onError(String utteranceId) {
-                    if (TTS_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished();
-                }
+                @Override public void onDone(String utteranceId) { if (TTS_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished(); }
+                @Override public void onError(String utteranceId) { if (TTS_UTTERANCE_ID.equals(utteranceId)) sendTtsFinished(); }
             });
         }
     }
@@ -100,29 +99,19 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             if (locale == null || !"en".equalsIgnoreCase(locale.getLanguage())) continue;
             int score = voice.getQuality() * 25 - voice.getLatency() * 3;
             String country = locale.getCountry();
-            if ("US".equalsIgnoreCase(country)) score += 70;
-            else if ("GB".equalsIgnoreCase(country)) score += 55;
-            else score += 20;
+            if ("US".equalsIgnoreCase(country)) score += 70; else if ("GB".equalsIgnoreCase(country)) score += 55; else score += 20;
             if (!voice.isNetworkConnectionRequired()) score += 45;
             String name = voice.getName() == null ? "" : voice.getName().toLowerCase(Locale.US);
             if (name.contains("enhanced") || name.contains("premium") || name.contains("high")) score += 35;
             if (name.contains("compact") || name.contains("low")) score -= 15;
-            if (score > bestScore) {
-                bestScore = score;
-                bestVoice = voice;
-            }
+            if (score > bestScore) { bestScore = score; bestVoice = voice; }
         }
-        if (bestVoice != null && textToSpeech.setVoice(bestVoice) == TextToSpeech.SUCCESS) {
-            activeVoiceName = bestVoice.getName();
-        }
+        if (bestVoice != null && textToSpeech.setVoice(bestVoice) == TextToSpeech.SUCCESS) activeVoiceName = bestVoice.getName();
     }
 
     private void speakFallback(String text, float rate) {
         runOnUiThread(() -> {
-            if (!ttsReady || text == null || text.trim().isEmpty()) {
-                sendTtsFinished();
-                return;
-            }
+            if (!ttsReady || text == null || text.trim().isEmpty()) { sendTtsFinished(); return; }
             textToSpeech.stop();
             textToSpeech.setSpeechRate(Math.max(0.35f, Math.min(rate, 1.25f)));
             textToSpeech.setPitch(1.0f);
@@ -132,24 +121,21 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     private void sendTtsFinished() {
         if (webView == null) return;
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "if(window.onNativeTtsFinished){window.onNativeTtsFinished();}", null));
+        runOnUiThread(() -> webView.evaluateJavascript("if(window.onNativeTtsFinished){window.onNativeTtsFinished();}", null));
     }
 
     private void sendSpeechResult(String text) {
         recognitionBusy = false;
         if (webView == null) return;
         final String quoted = JSONObject.quote(text == null ? "" : text);
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "if(window.onNativeSpeechResult){window.onNativeSpeechResult(" + quoted + ");}", null));
+        runOnUiThread(() -> webView.evaluateJavascript("if(window.onNativeSpeechResult){window.onNativeSpeechResult(" + quoted + ");}", null));
     }
 
     private void sendSpeechError(String text) {
         recognitionBusy = false;
         if (webView == null) return;
         final String quoted = JSONObject.quote(text == null ? "Erreur de reconnaissance" : text);
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "if(window.onNativeSpeechError){window.onNativeSpeechError(" + quoted + ");}", null));
+        runOnUiThread(() -> webView.evaluateJavascript("if(window.onNativeSpeechError){window.onNativeSpeechError(" + quoted + ");}", null));
     }
 
     private String speechErrorLabel(int code) {
@@ -187,17 +173,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void startNativeRecognition(String language) {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            sendSpeechError("reconnaissance vocale non disponible sur ce téléphone");
-            return;
-        }
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) { sendSpeechError("reconnaissance vocale non disponible sur ce téléphone"); return; }
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             pendingRecognitionLang = language == null ? "en-US" : language;
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO);
             return;
         }
         if (recognitionBusy) return;
-
         ensureSpeechRecognizer();
         recognitionBusy = true;
         String lang = language == null ? "en-US" : language;
@@ -210,91 +192,50 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 450L);
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 300L);
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 250L);
-        try {
-            speechRecognizer.startListening(intent);
-        } catch (Exception error) {
-            recognitionBusy = false;
-            sendSpeechError("micro indisponible, réessaie");
-        }
+        try { speechRecognizer.startListening(intent); }
+        catch (Exception error) { recognitionBusy = false; sendSpeechError("micro indisponible, réessaie"); }
     }
 
     public final class TtsBridge {
-        @JavascriptInterface
-        public void speak(final String text, final float rate) {
-            if (text == null || text.trim().isEmpty()) {
-                sendTtsFinished();
-                return;
-            }
+        @JavascriptInterface public void speak(final String text, final float rate) {
+            if (text == null || text.trim().isEmpty()) { sendTtsFinished(); return; }
             if (kokoro != null && kokoro.speak(text, rate)) return;
             speakFallback(text, rate);
         }
-
-        @JavascriptInterface
-        public boolean preload(final String text, final float rate) {
-            return kokoro != null && kokoro.preload(text, rate);
-        }
-
-        @JavascriptInterface
-        public boolean setVoice(final String voiceId) {
-            return kokoro != null && kokoro.setVoice(voiceId);
-        }
-
-        @JavascriptInterface
-        public String getSelectedVoiceId() {
-            return kokoro == null ? "af_heart" : kokoro.getSelectedVoiceId();
-        }
-
-        @JavascriptInterface
-        public String getVoiceName() {
-            if (kokoro != null && kokoro.isReady()) return kokoro.getStatus();
-            return activeVoiceName + " • " + (kokoro == null ? "Kokoro indisponible" : kokoro.getStatus());
-        }
-
-        @JavascriptInterface
-        public boolean isKokoroReady() {
-            return kokoro != null && kokoro.isReady();
-        }
-
-        @JavascriptInterface
-        public boolean isSpeaking() {
-            return kokoro != null && kokoro.isSpeaking();
-        }
+        @JavascriptInterface public boolean preload(final String text, final float rate) { return kokoro != null && kokoro.preload(text, rate); }
+        @JavascriptInterface public boolean setVoice(final String voiceId) { return kokoro != null && kokoro.setVoice(voiceId); }
+        @JavascriptInterface public String getSelectedVoiceId() { return kokoro == null ? "af_heart" : kokoro.getSelectedVoiceId(); }
+        @JavascriptInterface public String getVoiceName() { return kokoro != null && kokoro.isReady() ? kokoro.getStatus() : activeVoiceName + " • " + (kokoro == null ? "Kokoro indisponible" : kokoro.getStatus()); }
+        @JavascriptInterface public boolean isKokoroReady() { return kokoro != null && kokoro.isReady(); }
+        @JavascriptInterface public boolean isSpeaking() { return kokoro != null && kokoro.isSpeaking(); }
     }
 
     public final class SpeechBridge {
-        @JavascriptInterface
-        public void startRecognition(final String language) {
-            runOnUiThread(() -> startNativeRecognition(language));
-        }
+        @JavascriptInterface public void startRecognition(final String language) { runOnUiThread(() -> startNativeRecognition(language)); }
+        @JavascriptInterface public boolean isAvailable() { return SpeechRecognizer.isRecognitionAvailable(MainActivity.this); }
+    }
 
-        @JavascriptInterface
-        public boolean isAvailable() {
-            return SpeechRecognizer.isRecognitionAvailable(MainActivity.this);
-        }
+    public final class UpdateBridge {
+        @JavascriptInterface public String getCurrentVersion() { return updateManager == null ? BuildConfig.VERSION_NAME : updateManager.getCurrentVersion(); }
+        @JavascriptInterface public boolean isAutoCheckEnabled() { return updateManager != null && updateManager.isAutoCheckEnabled(); }
+        @JavascriptInterface public void setAutoCheckEnabled(boolean enabled) { if (updateManager != null) updateManager.setAutoCheckEnabled(enabled); }
+        @JavascriptInterface public void checkLatest() { if (updateManager != null) updateManager.checkLatest(true); }
+        @JavascriptInterface public void downloadAndInstall(String url, String version) { if (updateManager != null) updateManager.downloadAndInstall(url, version); }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_RECORD_AUDIO) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startNativeRecognition(pendingRecognitionLang);
-            } else {
-                sendSpeechError("permission micro refusée");
-            }
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) startNativeRecognition(pendingRecognitionLang);
+            else sendSpeechError("permission micro refusée");
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-            return;
-        }
-        if (webView != null) {
-            webView.evaluateJavascript("if (typeof window.appBack === 'function') { window.appBack(); }", null);
-            return;
-        }
+        if (webView != null && webView.canGoBack()) { webView.goBack(); return; }
+        if (webView != null) { webView.evaluateJavascript("if (typeof window.appBack === 'function') { window.appBack(); }", null); return; }
         super.onBackPressed();
     }
 
@@ -306,16 +247,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             try { speechRecognizer.destroy(); } catch (Exception ignored) { }
             speechRecognizer = null;
         }
+        if (updateManager != null) { updateManager.release(); updateManager = null; }
         if (webView != null) {
             webView.removeJavascriptInterface("AndroidTTS");
             webView.removeJavascriptInterface("AndroidSpeech");
+            webView.removeJavascriptInterface("AndroidUpdater");
             webView.destroy();
         }
         if (kokoro != null) kokoro.release();
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
-        }
+        if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); }
         super.onDestroy();
     }
 }

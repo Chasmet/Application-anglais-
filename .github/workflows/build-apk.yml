@@ -8,7 +8,10 @@ on:
     branches: [ main ]
     paths: ['*.html','*.css','*.js','icon.svg','manifest.webmanifest','android/**','.github/workflows/build-apk.yml']
   workflow_dispatch:
-permissions: { contents: read }
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,34 +22,64 @@ jobs:
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.10.2' }
+
       - name: Vérifier JavaScript
         run: |
-          for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js sw.js; do node --check "$f"; done
-          node -e "global.window={};require('./adult-scenarios-160.js');if(window.ADULT_ORAL_SCENARIOS.length!==160)throw new Error('Il faut exactement 160 situations');console.log('Situations orales:',window.ADULT_ORAL_SCENARIOS.length)"
+          for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js passive-oral.js settings.js sw.js; do node --check "$f"; done
+          node -e "global.window={};require('./adult-scenarios-160.js');if(window.ADULT_ORAL_SCENARIOS.length!==160)throw new Error('Il faut exactement 160 situations');console.log('Situations interactives:',window.ADULT_ORAL_SCENARIOS.length)"
+          grep -q 'Oral mains libres' adult.html
+          grep -q '240 programmes' adult.html
+          grep -q 'AndroidUpdater' settings.js
+          grep -q 'GitHub Releases' settings.html
           grep -q 'onNativeTtsFinished' adult-oral.js
           grep -q 'AndroidTTS.preload' adult-oral.js
-          ! grep -q 'split(/\\s+/).length\*330' adult-oral.js
-      - name: Vérifier Kokoro et faible latence
+
+      - name: Vérifier Android, Kokoro et updater
         working-directory: android
         run: |
           gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath
           grep -q 'setOnPlaybackCompleteListener' app/src/main/java/com/chasmet/quizanglais/KokoroTtsManager.java
           grep -q 'EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 450L' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
-          grep -q 'public boolean preload' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
+          grep -q 'AndroidUpdater' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
+          grep -q 'releases/latest' app/src/main/java/com/chasmet/quizanglais/UpdateManager.java
+          grep -q 'REQUEST_INSTALL_PACKAGES' app/src/main/AndroidManifest.xml
+
       - name: Construire APK
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
-      - name: Vérifier modules
+
+      - name: Vérifier contenu APK
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
           unzip -l "$APK" | grep -E 'model_quantized\.onnx|kokoro.*\.onnx'
-          for f in adult.html adult-oral.html adult-oral.js adult-scenarios-160.js adult-conversation.html adult-training.html; do unzip -l "$APK" | grep "assets/$f"; done
+          for f in index.html settings.html settings.js adult.html adult-oral.html adult-oral.js passive-oral.html passive-oral.js adult-scenarios-160.js; do unzip -l "$APK" | grep "assets/$f"; done
           grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.REQUEST_INSTALL_PACKAGES' android/app/src/main/AndroidManifest.xml
           test $(stat -c%s "$APK") -gt 83886080
-      - name: Publier APK
+
+      - name: Préparer APK nommé
+        run: |
+          VERSION=$(grep "versionName" android/app/build.gradle | head -1 | sed -E "s/.*versionName '([^']+)'.*/\1/")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "Anglais-Plus-v${VERSION}.apk"
+
+      - name: Publier artifact GitHub Actions
         uses: actions/upload-artifact@v4
         with:
-          name: Anglais-Plus-v3.8.1-ORAL-FAIBLE-LATENCE
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Anglais-Plus-v${{ env.VERSION }}
+          path: Anglais-Plus-v${{ env.VERSION }}.apk
           if-no-files-found: error
+
+      - name: Publier GitHub Release pour la mise à jour interne
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${VERSION}"
+          APK="Anglais-Plus-v${VERSION}.apk"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" --clobber
+          else
+            gh release create "$TAG" "$APK" --title "Anglais+ Academy ${VERSION}" --generate-notes
+          fi
