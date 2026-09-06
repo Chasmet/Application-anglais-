@@ -43,13 +43,18 @@ public final class UpdateManager {
         this.prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    public String getCurrentVersion() { return BuildConfig.VERSION_NAME; }
+    public String getCurrentVersion() {
+        try {
+            String v = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
+            return v == null ? "0.0.0" : v;
+        } catch (Exception e) {
+            return "0.0.0";
+        }
+    }
+
     public boolean isAutoCheckEnabled() { return prefs.getBoolean(PREF_AUTO, true); }
     public void setAutoCheckEnabled(boolean enabled) { prefs.edit().putBoolean(PREF_AUTO, enabled).apply(); }
-
-    public void autoCheck() {
-        if (isAutoCheckEnabled()) checkLatest(false);
-    }
+    public void autoCheck() { if (isAutoCheckEnabled()) checkLatest(false); }
 
     public void checkLatest(boolean userRequested) {
         worker.execute(() -> {
@@ -82,11 +87,12 @@ public final class UpdateManager {
                         }
                     }
                 }
-                boolean available = !latest.isEmpty() && compareVersions(latest, BuildConfig.VERSION_NAME) > 0 && !apkUrl.isEmpty();
+                String current = getCurrentVersion();
+                boolean available = !latest.isEmpty() && compareVersions(latest, current) > 0 && !apkUrl.isEmpty();
                 String msg;
                 if (available) msg = "Nouvelle version " + latest + " disponible.";
                 else if (!latest.isEmpty() && apkUrl.isEmpty()) msg = "Release " + latest + " trouvée, mais aucun APK n’est joint.";
-                else msg = "Application à jour (" + BuildConfig.VERSION_NAME + ").";
+                else msg = "Application à jour (" + current + ").";
                 if (userRequested) sendCheckResult(available, latest, apkUrl, msg);
                 else if (available) {
                     String fLatest = latest;
@@ -156,7 +162,7 @@ public final class UpdateManager {
             intent.setDataAndType(uri, "application/vnd.android.package-archive");
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
-            sendReady("APK prêt. Confirme l’installation Android. Les données de l’application restent conservées si la signature est identique.");
+            sendReady("APK prêt. Confirme l’installation Android. Tes données restent conservées si la signature de l’application est identique.");
         } catch (Throwable e) {
             sendError("Installation impossible : " + safeMessage(e));
         }
@@ -192,6 +198,5 @@ public final class UpdateManager {
     private void sendProgress(int pct, String msg) { js("if(window.onUpdateProgress)onUpdateProgress(" + pct + "," + q(msg) + ");"); }
     private void sendError(String msg) { js("if(window.onUpdateError)onUpdateError(" + q(msg) + ");"); }
     private void sendReady(String msg) { js("if(window.onUpdateReady)onUpdateReady(" + q(msg) + ");"); }
-
     public void release() { worker.shutdownNow(); }
 }
