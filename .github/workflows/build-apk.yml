@@ -80,7 +80,13 @@ jobs:
           test $(stat -c%s "$APK") -gt 83886080
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
           "$APKSIGNER" verify --verbose --print-certs "$APK" | tee /tmp/apk-signature.txt
-          grep -q 'Signer #1 certificate SHA-256 digest:' /tmp/apk-signature.txt
+          KEY_SHA=$(sed -n 's/.*SHA256: //p' /tmp/signing-cert.txt | head -1 | tr -d ':' | tr '[:upper:]' '[:lower:]')
+          APK_SHA=$(sed -n 's/.*certificate SHA-256 digest: //p' /tmp/apk-signature.txt | head -1 | tr '[:upper:]' '[:lower:]')
+          echo "Keystore cert: $KEY_SHA"
+          echo "APK cert:      $APK_SHA"
+          test -n "$KEY_SHA"
+          test -n "$APK_SHA"
+          test "$KEY_SHA" = "$APK_SHA"
 
       - name: Préparer APK nommé
         run: |
