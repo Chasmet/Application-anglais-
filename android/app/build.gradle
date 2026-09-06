@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 19
-        versionName '3.8.1'
+        versionCode 20
+        versionName '3.9.0'
     }
 
     buildTypes {
@@ -25,13 +25,16 @@ android {
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 
-dependencies { implementation 'com.jokobee:jokobeetts:1.1.0' }
+dependencies {
+    implementation 'com.jokobee:jokobeetts:1.1.0'
+    implementation 'androidx.core:core:1.13.1'
+}
 
 def webRoot = rootProject.projectDir.parentFile
 tasks.register('syncWebAssets', Copy) {
     from(webRoot) {
-        include 'index.html', 'classic.html', 'adult.html', 'adult-conversation.html', 'adult-training.html', 'adult-oral.html',
-                'adult.css', 'adult-oral.css', 'adult-data.js', 'adult-conversation.js', 'adult-training.js', 'adult-scenarios-160.js', 'adult-oral.js',
+        include 'index.html', 'classic.html', 'adult.html', 'adult-conversation.html', 'adult-training.html', 'adult-oral.html', 'passive-oral.html', 'settings.html',
+                'adult.css', 'adult-oral.css', 'adult-data.js', 'adult-conversation.js', 'adult-training.js', 'adult-scenarios-160.js', 'adult-oral.js', 'passive-oral.js', 'settings.js',
                 'quiz.html', 'style.css', 'app.js',
                 'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
                 'lessons.js', 'phrases-extra.js', 'activities-extra.js', 'content-ultra.js', 'corrections-plus.js',
