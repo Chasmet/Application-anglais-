@@ -24,25 +24,10 @@ jobs:
         with: { gradle-version: '8.10.2' }
 
       - name: Préparer signature Android stable
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p "$HOME/.android"
-          KEYSTORE="$HOME/.android/debug.keystore"
-          SIGNING_TAG="android-signing-key-v1"
-          rm -f "$KEYSTORE"
-          if gh release view "$SIGNING_TAG" >/dev/null 2>&1; then
-            echo "Réutilisation de la clé Android permanente"
-            gh release download "$SIGNING_TAG" -p 'stable-debug.keystore' -O "$KEYSTORE"
-          else
-            echo "Création initiale de la clé Android permanente"
-            keytool -genkeypair -keystore "$KEYSTORE" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Chasmet,C=FR'
-            if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
-              cp "$KEYSTORE" /tmp/stable-debug.keystore
-              gh release create "$SIGNING_TAG" /tmp/stable-debug.keystore --title 'Clé Android permanente v1' --notes 'Clé de signature publique utilisée pour conserver la même signature entre toutes les APK Anglais+.' --prerelease
-            fi
-          fi
-          keytool -list -v -keystore "$KEYSTORE" -storepass android -alias androiddebugkey | grep 'SHA256:' | tee /tmp/signing-cert.txt
+          mkdir -p android/signing
+          base64 -d android/signing/stable-debug.keystore.b64 > android/signing/stable-debug.keystore
+          keytool -list -v -keystore android/signing/stable-debug.keystore -storepass android -alias androiddebugkey | grep 'SHA256:' | tee /tmp/signing-cert.txt
 
       - name: Vérifier JavaScript
         run: |
