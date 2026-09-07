@@ -65,29 +65,41 @@ const TOPICS=[
 const levels=[['A2','simple et directe'],['A2+','plus naturelle'],['B1','avec davantage de contexte'],['B1+','avec nuance et vocabulaire plus riche']];
 const programs=[];
 TOPICS.forEach((t,ti)=>levels.forEach((l,li)=>programs.push({id:`p${ti}-${li}`,cat:t[0],title:`${t[1]} • ${l[0]}`,level:l[0],fr:t[2],en:t[3],why:t[4],hint:l[1]})));
-let queue=[],idx=0,playing=false,started=0,sessionMinutes=30;
+let queue=[],idx=0,playing=false,started=0,sessionMinutes=30,transitionToken=0;
 const cats={mix:'Tous les thèmes',daily:'Vie quotidienne',home:'Maison & cuisine',road:'Route & transport',work:'Travail',travel:'Voyage',people:'Relations',health:'Santé',shop:'Achats',food:'Restaurant',admin:'Administration',money:'Argent & banque',family:'Famille'};
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,Math.min(1500,Math.max(0,ms))));
 function shuffled(a){return [...a].sort(()=>Math.random()-.5)}
 function build(){const cat=$('theme').value;const src=cat==='mix'?programs:programs.filter(p=>p.cat===cat);queue=shuffled(src.length?src:programs);idx=0;$('programTotal').textContent=programs.length}
-function webSpeak(text,rate,lang,resolve){if(!('speechSynthesis'in window))return false;const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=rate;u.onend=resolve;u.onerror=resolve;speechSynthesis.cancel();speechSynthesis.speak(u);return true}
-function nativeSpeak(text,rate,lang){return new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;resolve()};window.onNativeTtsFinished=finish;try{if(window.AndroidTTS&&AndroidTTS.speakWithLanguage){AndroidTTS.speakWithLanguage(text,rate,lang);setTimeout(finish,Math.max(4000,text.length*110));return}if(window.AndroidTTS&&AndroidTTS.speak){AndroidTTS.speak(text,rate);setTimeout(finish,Math.max(4000,text.length*110));return}}catch(e){}if(webSpeak(text,rate,lang,finish))return;setTimeout(finish,1600)})}
-async function say(text,rate,lang){if(!playing)return;await nativeSpeak(text,rate,lang)}
+function webSpeak(text,rate,lang,resolve){if(!('speechSynthesis'in window))return false;const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=rate;u.pitch=lang.startsWith('fr')?.98:1;u.onend=resolve;u.onerror=resolve;speechSynthesis.cancel();speechSynthesis.speak(u);return true}
+function nativeSpeak(text,rate,lang){return new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;resolve()};window.onNativeTtsFinished=finish;try{if(window.AndroidTTS&&AndroidTTS.speakWithLanguage){AndroidTTS.speakWithLanguage(text,rate,lang);setTimeout(finish,Math.max(2600,text.length*90));return}if(window.AndroidTTS&&AndroidTTS.speak){AndroidTTS.speak(text,rate);setTimeout(finish,Math.max(2600,text.length*90));return}}catch(e){}if(webSpeak(text,rate,lang,finish))return;setTimeout(finish,1200)})}
+async function say(text,rate,lang){if(!playing)return false;await nativeSpeak(text,rate,lang);return playing}
+function preloadEnglish(text,rate){try{if(window.AndroidTTS&&AndroidTTS.preload)AndroidTTS.preload(text,rate)}catch(e){}}
 async function runLesson(){
  if(!playing)return;
+ const myToken=++transitionToken;
  if(Date.now()-started>=sessionMinutes*60000){playing=false;$('status').textContent=`Session de ${sessionMinutes} minutes terminée.`;return}
  if(idx>=queue.length){queue=shuffled(queue);idx=0}
  const p=queue[idx++];
  $('fr').textContent=p.fr;$('en').textContent=p.en;$('why').textContent=p.why;
  $('status').textContent=`${p.title} • ${Math.floor((Date.now()-started)/60000)+1}/${sessionMinutes} min`;
- await say('En français. '+p.fr,.94,'fr-FR');
- await say('En anglais. '+p.en,.74,'en-US');
- await say('Explication en français. '+p.why,.92,'fr-FR');
- await say('Maintenant en anglais. '+p.en,.68,'en-US');
- if(playing)setTimeout(runLesson,300)
+
+ // Précharge Kokoro pendant que la voix française parle afin d'éviter un blanc avant l'anglais.
+ preloadEnglish(p.en,.62);
+ if(!await say(p.fr,.88,'fr-FR')||myToken!==transitionToken)return;
+ await wait(650);
+ if(!await say(p.en,.62,'en-US')||myToken!==transitionToken)return;
+ await wait(850);
+ if(!await say('Pourquoi ? '+p.why,.86,'fr-FR')||myToken!==transitionToken)return;
+ await wait(700);
+ if(!await say('Écoute encore une fois.',.86,'fr-FR')||myToken!==transitionToken)return;
+ await wait(450);
+ preloadEnglish(p.en,.58);
+ if(!await say(p.en,.58,'en-US')||myToken!==transitionToken)return;
+ if(playing&&myToken===transitionToken)setTimeout(runLesson,900)
 }
 $('play').onclick=()=>{if(!playing){playing=true;started=Date.now();build();runLesson()}};
-$('pause').onclick=()=>{playing=false;try{speechSynthesis.cancel()}catch(e){}$('status').textContent='En pause.'};
-$('next').onclick=()=>{if(!playing){playing=true;started=started||Date.now()}runLesson()};
+$('pause').onclick=()=>{playing=false;transitionToken++;try{speechSynthesis.cancel()}catch(e){}$('status').textContent='En pause.'};
+$('next').onclick=()=>{transitionToken++;if(!playing){playing=true;started=started||Date.now()}runLesson()};
 $('theme').onchange=build;
 $('duration').onchange=()=>sessionMinutes=Number($('duration').value)||30;
 Object.entries(cats).forEach(([v,n])=>{if(v==='mix')return;const o=document.createElement('option');o.value=v;o.textContent=n;$('theme').appendChild(o)});

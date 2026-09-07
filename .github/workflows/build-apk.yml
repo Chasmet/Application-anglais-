@@ -23,6 +23,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.10.2' }
 
+      - name: Préparer signature Android stable
+        run: |
+          mkdir -p android/signing
+          base64 -d android/signing/stable-debug.keystore.b64 > android/signing/stable-debug.keystore
+          keytool -list -v -keystore android/signing/stable-debug.keystore -storepass android -alias androiddebugkey | grep 'SHA256:' | tee /tmp/signing-cert.txt
+
       - name: Vérifier JavaScript
         run: |
           for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js passive-oral.js settings.js sw.js; do node --check "$f"; done
@@ -48,7 +54,7 @@ jobs:
         working-directory: android
         run: gradle --no-daemon clean assembleDebug
 
-      - name: Vérifier contenu APK
+      - name: Vérifier contenu et signature APK
         run: |
           APK='android/app/build/outputs/apk/debug/app-debug.apk'
           test -f "$APK"
@@ -57,6 +63,15 @@ jobs:
           grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
           grep -q 'android.permission.REQUEST_INSTALL_PACKAGES' android/app/src/main/AndroidManifest.xml
           test $(stat -c%s "$APK") -gt 83886080
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee /tmp/apk-signature.txt
+          KEY_SHA=$(sed -n 's/.*SHA256: //p' /tmp/signing-cert.txt | head -1 | tr -d ':' | tr '[:upper:]' '[:lower:]')
+          APK_SHA=$(sed -n 's/.*certificate SHA-256 digest: //p' /tmp/apk-signature.txt | head -1 | tr '[:upper:]' '[:lower:]')
+          echo "Keystore cert: $KEY_SHA"
+          echo "APK cert:      $APK_SHA"
+          test -n "$KEY_SHA"
+          test -n "$APK_SHA"
+          test "$KEY_SHA" = "$APK_SHA"
 
       - name: Préparer APK nommé
         run: |
