@@ -4,6 +4,7 @@ const $=id=>document.getElementById(id),store=LearningStore;let latestUrl='',lat
 const status=message=>$('updateStatus').textContent=message;
 const native=window.AndroidUpdater;
 $('currentVersion').textContent=native?native.getCurrentVersion():'Version web';
+$('versionInfo').setAttribute('aria-label','Version installée : '+$('currentVersion').textContent);
 $('checkUpdate').disabled=!native;$('autoUpdate').disabled=!native;
 if(native)$('autoUpdate').checked=native.isAutoCheckEnabled();else status('La version web se met à jour automatiquement. Ferme ses onglets puis rouvre-la pour charger une mise à jour en attente.');
 $('autoUpdate').onchange=()=>native?.setAutoCheckEnabled($('autoUpdate').checked);
