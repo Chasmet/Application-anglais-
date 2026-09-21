@@ -50,7 +50,11 @@ Application mobile anglais-français pensée pour Android, utilisable hors ligne
 
 ## APK Android
 
-Le workflow GitHub Actions `Construire APK Android` vérifie les fichiers JavaScript, compile l’application Android et génère l’artefact `Quiz-Anglais-Plus-v3-APK`.
+Le workflow `Vérifier et construire Anglais+` exécute les tests web et Android, compile l’application et vérifie son démarrage et ses réglages sur émulateur Android 35. L’artefact `Anglais-Plus-4.0.0-preview` contient une application de test séparée, « Anglais+ Test ».
+
+La publication de l’APK principal nécessite la clé privée correspondant à la version actuellement distribuée. Le workflow vérifie cette compatibilité avant de créer une nouvelle release ; sans les secrets de signature, seule la version de test est produite. Voir [DEVELOPMENT.md](DEVELOPMENT.md).
+
+La version 4.0 ajoute la reprise des séances, l’export/restauration de la progression, le choix de voix et de taille du texte, et des dialogues corrigés. Les sauvegardes se trouvent dans Réglages. Voir [les changements](RELEASE-NOTES.md).
 
 ## Structure
 

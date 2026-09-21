@@ -26,7 +26,10 @@ def tap(xml, label):
     nodes = [node for node in ET.fromstring(xml).iter('node') if label in (node.get('text', '') + node.get('content-desc', '')) and node.get('clickable') == 'true']
     assert nodes, f'No clickable control: {label}'
     bounds = [tuple(map(int, re.findall(r'\d+', node.get('bounds', '')))) for node in nodes]
+    bounds = [b for b in bounds if len(b) == 4 and b[2] > b[0] and b[3] > b[1] and b[1] > 0]
+    assert bounds, f'No visible control: {label}'
     x1, y1, x2, y2 = min(bounds, key=lambda b: (b[2]-b[0])*(b[3]-b[1]))
+    print(f'Tapping visible {label}: {(x1, y1, x2, y2)}', flush=True)
     assert y1 > 0 and x2 > x1 and y2 > y1
     adb('shell', 'input', 'tap', str((x1+x2)//2), str((y1+y2)//2))
 
