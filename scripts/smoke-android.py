@@ -1,11 +1,17 @@
 """Exercise the rendered WebView and its native updater bridge on a fresh emulator."""
-import pathlib, re, subprocess, xml.etree.ElementTree as ET
+import pathlib, re, subprocess, time, xml.etree.ElementTree as ET
 
 def adb(*args):
     return subprocess.check_output(['adb', *args], text=True)
 
 def screen(filename):
-    adb('shell', 'uiautomator', 'dump', '/sdcard/anglais-smoke.xml')
+    for attempt in range(3):
+        try:
+            adb('shell', 'uiautomator', 'dump', '/sdcard/anglais-smoke.xml')
+            break
+        except subprocess.CalledProcessError:
+            if attempt == 2: raise
+            time.sleep(2)
     adb('pull', '/sdcard/anglais-smoke.xml', filename)
     return pathlib.Path(filename).read_text()
 
