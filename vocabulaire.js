@@ -18,18 +18,7 @@
   const escapeHtml = value => String(value || '').replace(/[&<>"]/g, char => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'
   }[char]));
-  const speak = text => {
-    if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
-      window.AndroidTTS.speak(String(text), 0.78);
-      return;
-    }
-    if (!('speechSynthesis' in window)) return;
-    const utterance = new SpeechSynthesisUtterance(String(text));
-    utterance.lang = 'en-US';
-    utterance.rate = 0.78;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
-  };
+  const speak = text => LearningAudio.speak(String(text), .78);
 
   const source = [...(window.QUIZ_WORDS || []), ...(window.QUIZ_EXTRA_WORDS || [])];
   const seen = new Set();
@@ -37,6 +26,7 @@
     en:String(word.en || '').trim(),
     fr:String(word.fr || '').trim(),
     theme:word.theme === 'mix' ? 'mix' : (word.theme || 'mix'),
+    searchText:normalizeText(`${word.en} ${word.fr}`),
     level:normalizeLevel(word.level)
   })).filter(word => {
     const key = `${word.en.toLowerCase()}|${word.fr.toLowerCase()}|${word.level}`;
@@ -70,7 +60,7 @@
     const level = levelFilter.value;
     const theme = themeFilter.value;
     filtered = words.filter(word => {
-      const matchesQuery = !query || normalizeText(`${word.en} ${word.fr}`).includes(query);
+      const matchesQuery = !query || word.searchText.includes(query);
       const matchesLevel = level === 'all' || word.level === level;
       const matchesTheme = theme === 'all' || word.theme === theme;
       return matchesQuery && matchesLevel && matchesTheme;

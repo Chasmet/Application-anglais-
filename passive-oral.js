@@ -62,35 +62,40 @@ const TOPICS=[
 ['family','Week-end','Nous allons voir la famille ce week-end.','We are going to see the family this weekend.','Be going to exprime un projet déjà prévu.'],
 ['family','Sport','Il a entraînement de football ce soir.','He has football practice tonight.','Football practice signifie entraînement de football.']
 ];
-const levels=[['A2','simple et directe'],['A2+','plus naturelle'],['B1','avec davantage de contexte'],['B1+','avec nuance et vocabulaire plus riche']];
-const programs=[];
-TOPICS.forEach((t,ti)=>levels.forEach((l,li)=>programs.push({id:`p${ti}-${li}`,cat:t[0],title:`${t[1]} • ${l[0]}`,level:l[0],fr:t[2],en:t[3],why:t[4],hint:l[1]})));
-let queue=[],idx=0,playing=false,started=0,sessionMinutes=30;
-const cats={mix:'Tous les thèmes',daily:'Vie quotidienne',home:'Maison & cuisine',road:'Route & transport',work:'Travail',travel:'Voyage',people:'Relations',health:'Santé',shop:'Achats',food:'Restaurant',admin:'Administration',money:'Argent & banque',family:'Famille'};
-function shuffled(a){return [...a].sort(()=>Math.random()-.5)}
-function build(){const cat=$('theme').value;const src=cat==='mix'?programs:programs.filter(p=>p.cat===cat);queue=shuffled(src.length?src:programs);idx=0;$('programTotal').textContent=programs.length}
-function webSpeak(text,rate,lang,resolve){if(!('speechSynthesis'in window))return false;const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=rate;u.onend=resolve;u.onerror=resolve;speechSynthesis.cancel();speechSynthesis.speak(u);return true}
-function nativeSpeak(text,rate,lang){return new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;resolve()};window.onNativeTtsFinished=finish;try{if(window.AndroidTTS&&AndroidTTS.speakWithLanguage){AndroidTTS.speakWithLanguage(text,rate,lang);setTimeout(finish,Math.max(4000,text.length*110));return}if(window.AndroidTTS&&AndroidTTS.speak){AndroidTTS.speak(text,rate);setTimeout(finish,Math.max(4000,text.length*110));return}}catch(e){}if(webSpeak(text,rate,lang,finish))return;setTimeout(finish,1600)})}
-async function say(text,rate,lang){if(!playing)return;await nativeSpeak(text,rate,lang)}
-async function runLesson(){
- if(!playing)return;
- if(Date.now()-started>=sessionMinutes*60000){playing=false;$('status').textContent=`Session de ${sessionMinutes} minutes terminée.`;return}
- if(idx>=queue.length){queue=shuffled(queue);idx=0}
- const p=queue[idx++];
- $('fr').textContent=p.fr;$('en').textContent=p.en;$('why').textContent=p.why;
- $('status').textContent=`${p.title} • ${Math.floor((Date.now()-started)/60000)+1}/${sessionMinutes} min`;
- await say('En français. '+p.fr,.94,'fr-FR');
- await say('En anglais. '+p.en,.74,'en-US');
- await say('Explication en français. '+p.why,.92,'fr-FR');
- await say('Maintenant en anglais. '+p.en,.68,'en-US');
- if(playing)setTimeout(runLesson,300)
+
+const programs=TOPICS.map((t,i)=>({id:i,cat:t[0],title:t[1],fr:t[2],en:t[3],why:t[4]}));
+const store=LearningStore,audio=LearningAudio;
+const cats={daily:'Vie quotidienne',home:'Maison & cuisine',road:'Route & transport',work:'Travail',travel:'Voyage',people:'Relations',health:'Santé',shop:'Achats',food:'Restaurant',admin:'Administration',money:'Argent & banque',family:'Famille'};
+let queue=[],idx=0,stage=0,playing=false,elapsed=0,startedAt=0,sessionMinutes=10,token=0,completed=false;
+function shuffled(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function spent(){return elapsed+(playing?Date.now()-startedAt:0);}
+function save(){if(completed)return;store.saveSession('passive',{queue,idx,stage,elapsed:spent(),minutes:sessionMinutes,theme:$('theme').value});}
+function build(){completed=false;queue=shuffled(programs.filter(p=>$('theme').value==='mix'||p.cat===$('theme').value).map(p=>p.id));idx=0;stage=0;elapsed=0;display();}
+function display(){const p=programs[queue[idx]];if(!p)return;$('fr').textContent=p.fr;$('en').textContent=p.en;$('why').textContent=p.why;}
+function pause(message='En pause. Reprends au même passage.'){if(playing)elapsed=spent();playing=false;token++;audio.stop();$('play').textContent='▶ Reprendre';$('status').textContent=message;save();}
+async function run(myToken){
+ while(playing&&myToken===token){
+  if(spent()>=sessionMinutes*60000){pause('Séance terminée. Bravo pour cette écoute !');completed=true;store.clearSession('passive');$('play').textContent='▶ Nouvelle écoute';elapsed=0;return;}
+  if(idx>=queue.length){queue=shuffled(queue);idx=0;}
+  const p=programs[queue[idx]];display();
+  const steps=[[p.fr,.9,'fr-FR'],[p.en,.74,'en-US'],[p.why,.9,'fr-FR'],[p.en,.62,'en-US']];
+  const labels=['Français','Anglais','Explication','Répétition lente'];
+  $('status').textContent=`${p.title} • ${labels[stage]} • ${Math.floor(spent()/60000)}/${sessionMinutes} min`;
+  const result=await audio.speak(...steps[stage]);
+  if(!playing||myToken!==token)return;
+  if(result!=='done'){pause('Voix indisponible ou interrompue. Vérifie les réglages, puis reprends.');return;}
+  stage++;if(stage===steps.length){stage=0;idx++;}save();
+ }
 }
-$('play').onclick=()=>{if(!playing){playing=true;started=Date.now();build();runLesson()}};
-$('pause').onclick=()=>{playing=false;try{speechSynthesis.cancel()}catch(e){}$('status').textContent='En pause.'};
-$('next').onclick=()=>{if(!playing){playing=true;started=started||Date.now()}runLesson()};
-$('theme').onchange=build;
-$('duration').onchange=()=>sessionMinutes=Number($('duration').value)||30;
-Object.entries(cats).forEach(([v,n])=>{if(v==='mix')return;const o=document.createElement('option');o.value=v;o.textContent=n;$('theme').appendChild(o)});
+function play(){if(playing)return;if(completed)build();if(!queue.length)build();playing=true;startedAt=Date.now();$('play').textContent='▶ En lecture';const id=++token;run(id);}
+$('play').onclick=play;$('pause').onclick=()=>pause();
+$('next').onclick=()=>{const resume=playing;pause();idx=(idx+1)%queue.length;stage=0;display();save();if(resume)play();};
+$('restart').onclick=()=>{pause();build();save();play();};
+$('theme').onchange=()=>{pause();build();save();$('status').textContent='Thème choisi. Appuie sur Lecture.';};
+$('duration').onchange=()=>{sessionMinutes=Number($('duration').value)||10;save();};
+Object.entries(cats).forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;$('theme').appendChild(o);});
 $('programTotal').textContent=programs.length;
-build();
+const saved=store.getSession('passive');
+if(saved&&Array.isArray(saved.queue)&&saved.queue.length&&saved.queue.every(id=>Number.isInteger(id)&&programs[id])){queue=saved.queue;idx=Math.max(0,Number(saved.idx)||0)%queue.length;stage=Math.max(0,Math.min(3,Number(saved.stage)||0));elapsed=Math.max(0,Number(saved.elapsed)||0);sessionMinutes=[5,10,15,30,45,60].includes(saved.minutes)?saved.minutes:10;$('theme').value=cats[saved.theme]?saved.theme:'mix';$('duration').value=String(sessionMinutes);$('play').textContent='▶ Reprendre';$('status').textContent='Ta séance est sauvegardée. Appuie sur Reprendre.';display();}else build();
+window.addEventListener('pagehide',()=>pause());window.addEventListener('learning-interrupted',()=>pause('Séance sauvegardée. Reviens ici pour reprendre.'));
 })();

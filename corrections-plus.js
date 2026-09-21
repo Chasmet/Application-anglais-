@@ -2,19 +2,8 @@
   const normalise = value => String(value || '').toLowerCase().normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9' ]/g, ' ').replace(/\s+/g, ' ').trim();
 
-  const speak = (text, rate = 0.78) => {
-    if (!text) return;
-    if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
-      window.AndroidTTS.speak(String(text), Number(rate));
-      return;
-    }
-    if (!('speechSynthesis' in window)) return;
-    const u = new SpeechSynthesisUtterance(String(text));
-    u.lang = 'en-US';
-    u.rate = rate;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  };
+  const escapeHtml = value => String(value||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const speak = (text, rate = .78) => LearningAudio.speak(text,rate);
 
   function wordDiff(expected, actual) {
     const a = normalise(expected).split(' ').filter(Boolean);
@@ -76,7 +65,7 @@
 
     feedback.innerHTML = `
       <strong>${isGood ? 'Bien joué.' : 'Correction détaillée'}</strong>
-      <span>${choiceNote}${choiceNote ? ' ' : ''}${lesson}</span>
+      <span>${escapeHtml(choiceNote)}${choiceNote ? ' ' : ''}${escapeHtml(lesson)}</span>
       ${en ? '<button type="button" class="correctionSpeak" id="correctionSpeak">🔊 Écouter la bonne réponse</button>' : ''}
     `;
     feedback.dataset.enriched = '1';
