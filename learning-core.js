@@ -3,7 +3,7 @@
   'use strict';
   const allowed = key => /^(qa3_|academy_|adult|learning_)/.test(key);
   function read(key, fallback) {
-    try { const value = JSON.parse(localStorage.getItem(key)); return value == null ? fallback : value; }
+    try { const value = JSON.parse(localStorage.getItem(key)); if(value==null)return fallback;if(Array.isArray(fallback)&&!Array.isArray(value))return fallback;if(fallback&&typeof fallback==='object'&&!Array.isArray(fallback)&&(typeof value!=='object'||Array.isArray(value)))return fallback;return value; }
     catch (_) { return fallback; }
   }
   function write(key, value) {

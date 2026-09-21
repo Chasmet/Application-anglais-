@@ -97,5 +97,15 @@ test('decimal number input is rejected instead of silently truncated',async t=>{
 });
 test('all local HTML dependencies exist and are packaged for Android',()=>{
   const gradle=source('android/app/build.gradle');
-  for(const file of fs.readdirSync(root).filter(x=>x.endsWith('.html'))){const dom=new JSDOM(source(file));for(const el of dom.window.document.querySelectorAll('script[src],link[rel="stylesheet"]')){const asset=el.getAttribute('src')||el.getAttribute('href');if(/^https?:/.test(asset))continue;assert.ok(fs.existsSync(path.join(root,asset)),asset);assert.ok(gradle.includes("'"+asset+"'"),'Android asset missing: '+asset);}dom.window.close();}
+  for(const file of fs.readdirSync(root).filter(x=>x.endsWith('.html'))){const dom=new JSDOM(source(file));for(const el of dom.window.document.querySelectorAll('script[src],link[rel="stylesheet"]')){const asset=(el.getAttribute('src')||el.getAttribute('href')).split('?')[0];if(/^https?:/.test(asset))continue;assert.ok(fs.existsSync(path.join(root,asset)),asset);assert.ok(gradle.includes("'"+asset+"'"),'Android asset missing: '+asset);}dom.window.close();}
+});
+test('oral completion can be followed by interruption and navigation without errors',async t=>{
+  const p=await page(t,'adult-oral.html');p.d.querySelector('.oralScenario').click();const scenario=p.w.ADULT_ORAL_SCENARIOS[0];
+  for(const turn of scenario.turns){p.d.getElementById('oralTyped').value=turn.expected;p.d.getElementById('submitTyped').click();p.d.getElementById('continueOral').click();}
+  assert.match(p.d.getElementById('oralSession').textContent,/Discussion terminée/);
+  p.w.dispatchEvent(new p.w.Event('learning-interrupted'));p.w.dispatchEvent(new p.w.Event('pagehide'));assert.equal(p.w.LearningStore.getSession('adultOral'),null);
+});
+test('typing correction treats user markup as text',async t=>{
+  const p=await page(t,'quiz.html');p.w.LearningStore.saveSession('quiz',{profile:'Yvane',level:'debutant',mission:{id:'test'},rounds:[{type:'typing',item:{en:'Good morning.',fr:'Bonjour.'}}],index:0,score:0,hearts:5,xpEarned:0,validated:false});
+  const q=await page(t,'quiz.html',{storage:p.storage(),query:'?resume=1'});const input=q.d.getElementById('typingInput');input.value='<img src=x onerror=alert(1)>';input.dispatchEvent(new q.w.Event('input'));q.d.getElementById('validate').click();await tick();assert.equal(q.d.querySelectorAll('#feedback img,#reveal img,#correctionPlus img').length,0);assert.equal(q.d.querySelectorAll('[onerror]').length,0);
 });

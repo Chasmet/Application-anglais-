@@ -28,6 +28,9 @@ jobs:
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '17'}
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '8.10.2'}
       - name: Compiler et tester Android
@@ -89,6 +92,9 @@ jobs:
         if: steps.signing.outputs.ready == 'true'
         with: {distribution: temurin, java-version: '17'}
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
         if: steps.signing.outputs.ready == 'true'
       - uses: gradle/actions/setup-gradle@v4
         if: steps.signing.outputs.ready == 'true'

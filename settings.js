@@ -5,7 +5,7 @@ const status=message=>$('updateStatus').textContent=message;
 const native=window.AndroidUpdater;
 $('currentVersion').textContent=native?native.getCurrentVersion():'Version web';
 $('checkUpdate').disabled=!native;$('autoUpdate').disabled=!native;
-if(native)$('autoUpdate').checked=native.isAutoCheckEnabled();else status('La version web se met à jour lors du rechargement.');
+if(native)$('autoUpdate').checked=native.isAutoCheckEnabled();else status('La version web se met à jour automatiquement. Ferme ses onglets puis rouvre-la pour charger une mise à jour en attente.');
 $('autoUpdate').onchange=()=>native?.setAutoCheckEnabled($('autoUpdate').checked);
 $('checkUpdate').onclick=()=>{if(!native)return;status('Recherche de la dernière version…');$('checkUpdate').disabled=true;$('downloadUpdate').hidden=true;clearTimeout(checkTimer);checkTimer=setTimeout(()=>window.onUpdateError('Le serveur ne répond pas. Réessaie plus tard.'),18000);try{native.checkLatest();}catch(_){window.onUpdateError('Vérification indisponible.');}};
 $('downloadUpdate').onclick=()=>{if(!native||!latestUrl)return;$('downloadUpdate').disabled=true;status('Téléchargement en cours…');try{native.downloadAndInstall(latestUrl,latestVersion);}catch(_){window.onUpdateError('Téléchargement indisponible.');}};
@@ -25,7 +25,7 @@ function exportBackup(){const text=store.exportData();if(window.AndroidBackup?.e
 $('exportBackup').onclick=exportBackup;
 window.onBackupLoaded=text=>{try{const backup=store.validateBackup(text);pendingBackup=text;$('restoreBackup').hidden=false;$('backupStatus').textContent=`Sauvegarde reconnue : ${Object.keys(backup.entries).length} éléments. Enregistre d’abord une copie de tes progrès actuels, puis confirme la restauration.`;}catch(e){pendingBackup='';$('restoreBackup').hidden=true;window.onBackupStatus(e.message||'Fichier invalide.');}};
 $('importBackup').onclick=()=>{if(window.AndroidBackup?.importData)AndroidBackup.importData();else $('backupFile').click();};
-$('backupFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>4000000){window.onBackupStatus('Fichier trop volumineux.');return;}try{window.onBackupLoaded(await file.text());}catch(_){window.onBackupStatus('Impossible de lire le fichier.');}e.target.value='';};
+$('backupFile').onchange=async e=>{pendingBackup='';$('restoreBackup').hidden=true;const file=e.target.files[0];if(!file)return;if(file.size>4000000){window.onBackupStatus('Fichier trop volumineux.');return;}try{window.onBackupLoaded(await file.text());}catch(_){window.onBackupStatus('Impossible de lire le fichier.');}e.target.value='';};
 $('restoreBackup').onclick=()=>{try{const count=store.importData(pendingBackup);pendingBackup='';$('restoreBackup').hidden=true;window.onBackupStatus(`${count} éléments restaurés. Retourne à l’accueil pour reprendre.`);}catch(e){window.onBackupStatus(e.message);}};
 window.addEventListener('learning-storage-error',()=>window.onBackupStatus('Stockage insuffisant. Exporte tes progrès avant de libérer de la place.'));voices();
 })();

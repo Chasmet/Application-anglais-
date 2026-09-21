@@ -13,7 +13,7 @@ self.addEventListener('fetch', event => {
   const request = event.request, url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
   // Keep the HTML and scripts from one complete version together, including offline.
-  const cacheKey = request.mode === 'navigate' ? url.pathname : request;
+  const cacheKey = url.pathname;
   event.respondWith(caches.open(CACHE_NAME).then(async cache => {
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
