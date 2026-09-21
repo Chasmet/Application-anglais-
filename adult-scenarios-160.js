@@ -47,58 +47,501 @@ const levels=[
 {key:'B1',label:'B1 • Autonome',rank:3,suffix:'Avec un imprévu à résoudre',tone:'detail'},
 {key:'B1+',label:'B1+ • Difficile',rank:4,suffix:'Négociation et justification',tone:'complex'}
 ];
-const stageBank={
-1:[
-['Hello. How can I help you today?','Hello. I need some help, please.','Bonjour. J’ai besoin d’aide, s’il vous plaît.'],
-['Good morning. What can I do for you?','Good morning. I would like some information, please.','Bonjour. Je voudrais quelques informations, s’il vous plaît.']
-],
-2:[
-['Of course. Can you tell me a little more?','Yes. I would like to explain the situation.','Oui. Je voudrais expliquer la situation.'],
-['Certainly. What exactly do you need?','I need to check a few details first.','Je dois d’abord vérifier quelques détails.']
-],
-3:[
-['I understand. Is there anything else?','Yes, I also have one more question.','Oui, j’ai aussi une autre question.'],
-['Thanks for explaining. What would be best for you?','The best solution for me would be a quick and simple option.','La meilleure solution pour moi serait une option rapide et simple.']
-],
-4:[
-['We can do that, but there may be a small delay.','That is okay, but could you tell me how long it will take?','D’accord, mais pourriez-vous me dire combien de temps cela prendra ?'],
-['There is one small problem with that option.','I see. What other option do you recommend?','Je vois. Quelle autre option recommandez-vous ?']
-],
-5:[
-['Would you like me to confirm everything now?','Yes, please. Could you confirm the main details?','Oui, s’il vous plaît. Pourriez-vous confirmer les principaux détails ?'],
-['Before we finish, do you have any questions?','Yes. Could you repeat the most important information?','Oui. Pourriez-vous répéter les informations les plus importantes ?']
-],
-6:[
-['That is all sorted. Is there anything else I can do?','No, that is everything. Thank you for your help.','Non, c’est tout. Merci pour votre aide.'],
-['Everything is confirmed now.','Perfect. Thank you very much. Have a nice day.','Parfait. Merci beaucoup. Bonne journée.']
-]
-};
-function pronunciation(text){return text.toLowerCase().replace(/th/g,'z').replace(/you/g,'iou').replace(/would/g,'woud').replace(/could/g,'koud').replace(/please/g,'pliiz').replace(/thank/g,'sènk').replace(/help/g,'help').replace(/i /g,'aï ');}
-function specificLines(topic,level){
-const title=topic[2].toLowerCase();
-const hard=level.rank>=3;
-return [
-{npc:`I see you are here about ${title}. What would you like to do?`,user:`I would like to deal with ${title} today, please.`,fr:`Je voudrais m’occuper de « ${topic[2]} » aujourd’hui, s’il vous plaît.`},
-{npc:hard?'There are two possible options. One is faster, but the other is more flexible. Which matters more to you?':'Would you prefer the standard option or the quicker option?',user:hard?'I would prefer the more flexible option, as long as it does not take too long.':'I would prefer the quicker option, please.',fr:hard?'Je préférerais l’option la plus flexible, tant que cela ne prend pas trop de temps.':'Je préférerais l’option la plus rapide, s’il vous plaît.'},
-{npc:level.rank===4?'I may need you to justify that request before I can approve it.':'Could you confirm that this solution works for you?',user:level.rank===4?'Of course. The main reason is that I need a reliable solution today, and the alternative would create another problem.':'Yes, that solution works for me.',fr:level.rank===4?'Bien sûr. La raison principale est que j’ai besoin d’une solution fiable aujourd’hui, et l’alternative créerait un autre problème.':'Oui, cette solution me convient.'}
+const content=[
+  [
+    "Do you have a reservation?",
+    "I have a reservation for two nights.",
+    "J’ai une réservation pour deux nuits.",
+    "I would like a quiet room, please.",
+    "Je voudrais une chambre calme.",
+    "The quiet rooms are not available until three.",
+    "I can leave my bags here and come back at three.",
+    "Je peux laisser mes bagages ici et revenir à trois heures.",
+    "I need to rest before an early meeting tomorrow.",
+    "Je dois me reposer avant une réunion tôt demain."
+  ],
+  [
+    "What is the issue with your room?",
+    "The heating in my room is not working.",
+    "Le chauffage de ma chambre ne fonctionne pas.",
+    "Could someone check it this afternoon?",
+    "Quelqu’un pourrait-il le vérifier cet après-midi ?",
+    "We cannot repair it today.",
+    "Could you move me to another room instead?",
+    "Pourriez-vous me donner une autre chambre à la place ?",
+    "The room is too cold to sleep in comfortably.",
+    "Il fait trop froid dans la chambre pour dormir confortablement."
+  ],
+  [
+    "When would you like to book a table?",
+    "I would like a table for four tonight.",
+    "Je voudrais une table pour quatre ce soir.",
+    "Is a booking at seven available?",
+    "Est-il possible de réserver à sept heures ?",
+    "We only have a table at eight.",
+    "Eight is fine. Please book that table.",
+    "Huit heures me convient. Réservez cette table, s’il vous plaît.",
+    "We can arrive later if the four of us can sit together.",
+    "Nous pouvons arriver plus tard si nous pouvons être assis ensemble."
+  ],
+  [
+    "Are you ready to order your main course?",
+    "I would like the chicken with vegetables.",
+    "Je voudrais le poulet avec des légumes.",
+    "What starter do you recommend?",
+    "Quelle entrée recommandez-vous ?",
+    "The chicken is sold out today.",
+    "I will have the fish with vegetables instead.",
+    "Je prendrai le poisson avec des légumes à la place.",
+    "I would prefer a light meal because I have a long journey ahead.",
+    "Je préfère un repas léger car un long trajet m’attend."
+  ],
+  [
+    "Do you have any food allergies?",
+    "I am allergic to peanuts.",
+    "Je suis allergique aux cacahuètes.",
+    "Could you check all the ingredients, please?",
+    "Pourriez-vous vérifier tous les ingrédients ?",
+    "This dish may contain peanuts.",
+    "Please suggest a dish without peanuts instead.",
+    "Proposez-moi plutôt un plat sans cacahuètes.",
+    "I need to avoid peanuts completely because of my allergy.",
+    "Je dois éviter complètement les cacahuètes à cause de mon allergie."
+  ],
+  [
+    "What would you like to drink?",
+    "I would like a decaf coffee to take away.",
+    "Je voudrais un café décaféiné à emporter.",
+    "Could you change the milk to oat milk?",
+    "Pourriez-vous remplacer le lait par du lait d’avoine ?",
+    "We have run out of oat milk.",
+    "A black decaf coffee is fine, thank you.",
+    "Un café noir décaféiné me convient, merci.",
+    "I would rather have no milk than change my order to a regular coffee.",
+    "Je préfère ne pas mettre de lait plutôt que commander un café ordinaire."
+  ],
+  [
+    "Which product are you looking for?",
+    "Which aisle has the rice, please?",
+    "Dans quel rayon se trouve le riz ?",
+    "I am looking for this brand.",
+    "Je cherche cette marque.",
+    "That brand is out of stock.",
+    "Is there a similar brand at the same price?",
+    "Y a-t-il une marque similaire au même prix ?",
+    "I can try another brand as long as it fits my budget.",
+    "Je peux essayer une autre marque tant que cela respecte mon budget."
+  ],
+  [
+    "What seems to be wrong with your receipt?",
+    "I was charged the wrong price.",
+    "On m’a facturé le mauvais prix.",
+    "The shelf label showed five pounds.",
+    "L’étiquette du rayon indiquait cinq livres.",
+    "The discount has already ended.",
+    "Could you check the label and refund the difference?",
+    "Pourriez-vous vérifier l’étiquette et rembourser la différence ?",
+    "The lower price was still displayed when I chose the item.",
+    "Le prix inférieur était encore affiché quand j’ai choisi l’article."
+  ],
+  [
+    "Can I help you find your size?",
+    "Can I try this jacket on?",
+    "Puis-je essayer cette veste ?",
+    "Where is the fitting room?",
+    "Où est la cabine d’essayage ?",
+    "That size does not seem to fit.",
+    "Do you have the next size up?",
+    "Avez-vous la taille au-dessus ?",
+    "I need enough room to wear a jumper underneath.",
+    "Il me faut assez de place pour porter un pull en dessous."
+  ],
+  [
+    "Why would you like to return this item?",
+    "I would like to return this shirt.",
+    "Je voudrais retourner cette chemise.",
+    "I have the receipt with me.",
+    "J’ai le ticket de caisse avec moi.",
+    "We can offer an exchange today.",
+    "Could I exchange it for a larger size?",
+    "Pourrais-je l’échanger contre une taille plus grande ?",
+    "I like the shirt, but the current size is too small.",
+    "J’aime cette chemise, mais la taille actuelle est trop petite."
+  ],
+  [
+    "May I see your boarding pass?",
+    "Here is my boarding pass.",
+    "Voici ma carte d’embarquement.",
+    "I have one piece of luggage to check in.",
+    "J’ai un bagage à enregistrer.",
+    "There are no window seats left.",
+    "An aisle seat would be fine, thank you.",
+    "Un siège côté couloir me conviendrait, merci.",
+    "I would like to be able to stand up easily during the flight.",
+    "J’aimerais pouvoir me lever facilement pendant le vol."
+  ],
+  [
+    "Are you asking about the flight delay?",
+    "How long is the flight delayed?",
+    "De combien de temps le vol est-il retardé ?",
+    "I have a connection this evening.",
+    "J’ai une correspondance ce soir.",
+    "You may miss your connection.",
+    "Could you rebook me on the next available flight?",
+    "Pourriez-vous me réserver le prochain vol disponible ?",
+    "I need to arrive tomorrow morning, even if I have to take a different route.",
+    "Je dois arriver demain matin, même si je dois prendre un autre itinéraire."
+  ],
+  [
+    "What happened at baggage claim?",
+    "My suitcase is missing.",
+    "Ma valise a disparu.",
+    "It is a large blue suitcase.",
+    "C’est une grande valise bleue.",
+    "We have not located it yet.",
+    "Could you give me a reference number for my claim?",
+    "Pourriez-vous me donner un numéro de dossier ?",
+    "I need to track the case and arrange delivery once you find it.",
+    "Je dois suivre le dossier et organiser la livraison quand vous la retrouverez."
+  ],
+  [
+    "Would you like a single or a return ticket?",
+    "I would like a return ticket to London.",
+    "Je voudrais un billet aller-retour pour Londres.",
+    "Which platform does the train leave from?",
+    "De quel quai part le train ?",
+    "The next train is fully booked.",
+    "I will take the following train, please.",
+    "Je prendrai le train suivant, s’il vous plaît.",
+    "I can leave later as long as the return ticket is valid this evening.",
+    "Je peux partir plus tard si le billet retour est valable ce soir."
+  ],
+  [
+    "Is your train cancelled?",
+    "My train has been cancelled.",
+    "Mon train a été annulé.",
+    "What alternative is available?",
+    "Quelle solution de remplacement est disponible ?",
+    "The next train leaves in two hours.",
+    "Could I get a refund instead?",
+    "Pourrais-je obtenir un remboursement à la place ?",
+    "Waiting two hours would make me miss my appointment.",
+    "Attendre deux heures me ferait manquer mon rendez-vous."
+  ],
+  [
+    "What is your destination?",
+    "Please take me to the railway station.",
+    "Conduisez-moi à la gare, s’il vous plaît.",
+    "Could you drop me off at the main entrance?",
+    "Pourriez-vous me déposer à l’entrée principale ?",
+    "There is heavy traffic on the usual route.",
+    "Please take another route if it is quicker.",
+    "Prenez un autre itinéraire s’il est plus rapide.",
+    "I would rather pay a little more than miss my train.",
+    "Je préfère payer un peu plus plutôt que manquer mon train."
+  ],
+  [
+    "Do you have a rental reservation?",
+    "I have booked a small rental car.",
+    "J’ai réservé une petite voiture de location.",
+    "Does the price include insurance?",
+    "Le prix comprend-il l’assurance ?",
+    "The small car is not available.",
+    "Can I have a larger car at the same price?",
+    "Puis-je avoir une plus grande voiture au même prix ?",
+    "I booked in advance, so I would prefer not to pay for an unexpected upgrade.",
+    "J’ai réservé à l’avance et je préférerais ne pas payer un surclassement imprévu."
+  ],
+  [
+    "What is wrong with the car?",
+    "A warning light is on.",
+    "Un voyant est allumé.",
+    "The brakes also make a strange noise.",
+    "Les freins font aussi un bruit étrange.",
+    "We need to inspect the car before quoting a repair.",
+    "Please inspect it and call me with the estimate.",
+    "Inspectez-la et appelez-moi avec le devis.",
+    "I want to understand the cost before agreeing to the repair.",
+    "Je veux connaître le coût avant d’accepter la réparation."
+  ],
+  [
+    "Would you like to make an appointment?",
+    "I need an appointment with a doctor.",
+    "J’ai besoin d’un rendez-vous avec un médecin.",
+    "Is anything available this afternoon?",
+    "Y a-t-il un créneau cet après-midi ?",
+    "The next routine appointment is tomorrow.",
+    "Could you tell me how to request an urgent appointment?",
+    "Pourriez-vous m’expliquer comment demander un rendez-vous urgent ?",
+    "I would like the medical team to assess how soon I need to be seen.",
+    "J’aimerais que l’équipe médicale évalue dans quel délai je dois être vu."
+  ],
+  [
+    "Could you describe your symptoms?",
+    "I have had back pain since Monday.",
+    "J’ai mal au dos depuis lundi.",
+    "It hurts more when I bend down.",
+    "La douleur augmente quand je me penche.",
+    "Could you explain when the pain started?",
+    "It started after I lifted a heavy box.",
+    "Elle a commencé après que j’ai soulevé une boîte lourde.",
+    "I want to describe the symptoms clearly so you can assess them.",
+    "Je veux décrire clairement les symptômes pour que vous puissiez les évaluer."
+  ],
+  [
+    "Do you have a prescription?",
+    "Here is my prescription.",
+    "Voici mon ordonnance.",
+    "Could you explain the dosage, please?",
+    "Pourriez-vous m’expliquer la posologie ?",
+    "Which instructions would you like me to clarify?",
+    "Could you explain the possible side effects?",
+    "Pourriez-vous m’expliquer les effets secondaires possibles ?",
+    "I would like to understand the instructions before I take the medicine.",
+    "Je voudrais comprendre les instructions avant de prendre le médicament."
+  ],
+  [
+    "Which department do you work in?",
+    "I work in the maintenance department.",
+    "Je travaille au service maintenance.",
+    "I am responsible for cleaning the public areas.",
+    "Je suis chargé de nettoyer les espaces publics.",
+    "Who should I contact when you are away?",
+    "Please contact the team supervisor.",
+    "Contactez le responsable d’équipe, s’il vous plaît.",
+    "The supervisor can organise the work when I am not available.",
+    "Le responsable peut organiser le travail quand je ne suis pas disponible."
+  ],
+  [
+    "How is the project progressing?",
+    "We are making good progress.",
+    "Nous avançons bien.",
+    "Our priority is to meet the deadline.",
+    "Notre priorité est de respecter le délai.",
+    "One part of the delivery will be late.",
+    "We can finish the other tasks while we wait.",
+    "Nous pouvons terminer les autres tâches en attendant.",
+    "That would reduce the impact of the delay on the whole project.",
+    "Cela réduirait l’impact du retard sur l’ensemble du projet."
+  ],
+  [
+    "Why do you need an extension?",
+    "I need more time to finish the report.",
+    "Il me faut plus de temps pour finir le rapport.",
+    "My estimate is two more days.",
+    "J’estime avoir besoin de deux jours supplémentaires.",
+    "We still need an update by tomorrow.",
+    "I can send a first draft tomorrow and the final report on Friday.",
+    "Je peux envoyer un brouillon demain et le rapport final vendredi.",
+    "This would give you an update without sacrificing the quality of the final work.",
+    "Cela vous donnerait un point d’avancement sans sacrifier la qualité du travail final."
+  ],
+  [
+    "Do you agree with the proposal?",
+    "I have a concern about the schedule.",
+    "Le calendrier me préoccupe.",
+    "I suggest we allow more time for testing.",
+    "Je propose de prévoir plus de temps pour les tests.",
+    "Adding more time would delay the launch.",
+    "Could we test the most important features first?",
+    "Pourrions-nous tester d’abord les fonctions les plus importantes ?",
+    "That would help us manage the risk while keeping the delay short.",
+    "Cela nous aiderait à gérer le risque tout en limitant le retard."
+  ],
+  [
+    "Can you tell me about your experience?",
+    "I have experience working in a team.",
+    "J’ai de l’expérience dans le travail en équipe.",
+    "My main strength is solving practical problems.",
+    "Mon principal point fort est de résoudre des problèmes concrets.",
+    "The role sometimes requires an early start.",
+    "I am available to start early when needed.",
+    "Je peux commencer tôt si nécessaire.",
+    "I am used to planning my journey around the needs of the job.",
+    "J’ai l’habitude d’organiser mon trajet selon les besoins du poste."
+  ],
+  [
+    "Do you have any questions about the flat?",
+    "How much is the monthly rent?",
+    "Quel est le loyer mensuel ?",
+    "Are any bills included?",
+    "Certaines charges sont-elles comprises ?",
+    "The deposit is higher than you expected.",
+    "Could you explain how the deposit is calculated?",
+    "Pourriez-vous expliquer comment le dépôt de garantie est calculé ?",
+    "I need to know the total upfront cost before making a decision.",
+    "Je dois connaître le coût initial total avant de décider."
+  ],
+  [
+    "What needs repairing in the flat?",
+    "There is a leak in the bathroom.",
+    "Il y a une fuite dans la salle de bains.",
+    "Could you arrange an urgent repair?",
+    "Pourriez-vous organiser une réparation urgente ?",
+    "The usual plumber is not available today.",
+    "Could another plumber come today?",
+    "Un autre plombier pourrait-il venir aujourd’hui ?",
+    "I am concerned that the leak could damage the flat if we wait.",
+    "Je crains que la fuite n’endommage l’appartement si nous attendons."
+  ],
+  [
+    "How can I help with your child’s learning?",
+    "How is my child doing at school?",
+    "Comment mon enfant se débrouille-t-il à l’école ?",
+    "How can we help with homework?",
+    "Comment pouvons-nous aider pour les devoirs ?",
+    "Reading is the area that needs more practice.",
+    "Could you suggest a short reading activity for each evening?",
+    "Pourriez-vous proposer une courte activité de lecture pour chaque soir ?",
+    "A regular short activity would be easier to maintain than a long weekly session.",
+    "Une courte activité régulière serait plus facile à maintenir qu’une longue séance hebdomadaire."
+  ],
+  [
+    "Which activity would you like to register for?",
+    "I would like to register for the swimming class.",
+    "Je voudrais m’inscrire au cours de natation.",
+    "What is the schedule and the registration fee?",
+    "Quels sont les horaires et les frais d’inscription ?",
+    "The Wednesday class is full.",
+    "Is there a place in the Saturday class?",
+    "Y a-t-il une place au cours du samedi ?",
+    "Saturday would also work for me if the class is suitable for beginners.",
+    "Le samedi me conviendrait aussi si le cours convient aux débutants."
+  ],
+  [
+    "Would you like to join the football club?",
+    "I would like to join the club.",
+    "Je voudrais rejoindre le club.",
+    "When are the training sessions?",
+    "Quand ont lieu les entraînements ?",
+    "We need to know which position you play.",
+    "I usually play as a right back.",
+    "Je joue habituellement arrière droit.",
+    "I can try another defensive position if that would help the team.",
+    "Je peux essayer un autre poste défensif si cela aide l’équipe."
+  ],
+  [
+    "What did you think of our performance?",
+    "We defended well in the first half.",
+    "Nous avons bien défendu en première mi-temps.",
+    "We need to improve our passing.",
+    "Nous devons améliorer nos passes.",
+    "We lost the ball too often near our goal.",
+    "We should practise short passes under pressure.",
+    "Nous devrions travailler les passes courtes sous pression.",
+    "Better communication would also help us choose a safer pass.",
+    "Une meilleure communication nous aiderait aussi à choisir une passe plus sûre."
+  ],
+  [
+    "What is the issue with your account?",
+    "I have a problem with my subscription.",
+    "J’ai un problème avec mon abonnement.",
+    "I was charged twice this month.",
+    "J’ai été facturé deux fois ce mois-ci.",
+    "I can only see one payment on your account.",
+    "I can send you the two payment references.",
+    "Je peux vous envoyer les références des deux paiements.",
+    "Please investigate both references before closing the request.",
+    "Veuillez examiner les deux références avant de clôturer la demande."
+  ],
+  [
+    "What is happening with your connection?",
+    "My internet connection keeps dropping.",
+    "Ma connexion internet coupe régulièrement.",
+    "I have already restarted the router.",
+    "J’ai déjà redémarré le routeur.",
+    "The remote test does not show a fault.",
+    "Could you check the connection over a longer period?",
+    "Pourriez-vous vérifier la connexion sur une période plus longue ?",
+    "The problem is intermittent, so a short test may not capture it.",
+    "Le problème est intermittent, donc un test court peut ne pas le détecter."
+  ],
+  [
+    "What kind of account would you like?",
+    "I would like to open a current account.",
+    "Je voudrais ouvrir un compte courant.",
+    "Could you explain the monthly fees?",
+    "Pourriez-vous expliquer les frais mensuels ?",
+    "This account requires a regular payment into it.",
+    "Do you offer an account without that requirement?",
+    "Proposez-vous un compte sans cette condition ?",
+    "I would prefer a simple account with costs that I can predict.",
+    "Je préférerais un compte simple avec des frais prévisibles."
+  ],
+  [
+    "What happened when you used your card?",
+    "My card has been blocked.",
+    "Ma carte a été bloquée.",
+    "The last transaction was declined.",
+    "La dernière transaction a été refusée.",
+    "We need to verify the recent transactions.",
+    "Please explain how I can verify them securely.",
+    "Expliquez-moi comment les vérifier de manière sécurisée.",
+    "I would like to confirm which payments are mine before the card is unblocked.",
+    "Je voudrais confirmer quels paiements sont les miens avant le déblocage de la carte."
+  ],
+  [
+    "Are you calling about a missing delivery?",
+    "My parcel has not arrived.",
+    "Mon colis n’est pas arrivé.",
+    "The tracking page says it was delivered.",
+    "Le suivi indique qu’il a été livré.",
+    "The driver left it at a nearby address.",
+    "Could you check the exact delivery address?",
+    "Pourriez-vous vérifier l’adresse exacte de livraison ?",
+    "I need the delivery details so we can find the parcel.",
+    "J’ai besoin des détails de livraison pour retrouver le colis."
+  ],
+  [
+    "Which document do you need?",
+    "I need a form to renew this document.",
+    "J’ai besoin d’un formulaire pour renouveler ce document.",
+    "What is the deadline for submitting it?",
+    "Quelle est la date limite pour le déposer ?",
+    "One supporting document is missing.",
+    "Could you give me a list of the documents I need?",
+    "Pourriez-vous me donner la liste des documents nécessaires ?",
+    "A complete list would help me avoid another incomplete application.",
+    "Une liste complète m’aiderait à éviter une autre demande incomplète."
+  ],
+  [
+    "What would you like to report?",
+    "I would like to report a lost bag.",
+    "Je voudrais déclarer la perte d’un sac.",
+    "It is a black bag with a red strap.",
+    "C’est un sac noir avec une sangle rouge.",
+    "We need a more precise description of where you lost it.",
+    "I last saw it on the bus near the station.",
+    "Je l’ai vu pour la dernière fois dans le bus près de la gare.",
+    "I can provide the approximate time and the bus route to help with the report.",
+    "Je peux donner l’heure approximative et la ligne de bus pour faciliter la déclaration."
+  ],
+  [
+    "Is there something you would like to discuss?",
+    "The noise was very loud last night.",
+    "Le bruit était très fort hier soir.",
+    "Would you mind keeping the music down late at night?",
+    "Pourriez-vous baisser la musique tard le soir ?",
+    "We are having friends over again this weekend.",
+    "Could you move the speakers away from the shared wall?",
+    "Pourriez-vous éloigner les enceintes du mur mitoyen ?",
+    "That might let you enjoy the evening while keeping the noise lower next door.",
+    "Cela pourrait vous permettre de profiter de la soirée tout en réduisant le bruit chez les voisins."
+  ]
 ];
-}
 const scenarios=[];
-topics.forEach((topic,ti)=>levels.forEach((level,li)=>{
-const specific=specificLines(topic,level); const baseOffset=(ti+li)%2;
-const turns=[];
-turns.push({npc:stageBank[1][baseOffset][0],expected:stageBank[1][baseOffset][1],fr:stageBank[1][baseOffset][2]});
-turns.push({npc:specific[0].npc,expected:specific[0].user,fr:specific[0].fr});
-turns.push({npc:stageBank[2][(baseOffset+1)%2][0],expected:stageBank[2][(baseOffset+1)%2][1],fr:stageBank[2][(baseOffset+1)%2][2]});
-turns.push({npc:specific[1].npc,expected:specific[1].user,fr:specific[1].fr});
-turns.push({npc:stageBank[3][baseOffset][0],expected:stageBank[3][baseOffset][1],fr:stageBank[3][baseOffset][2]});
-if(level.rank>=2)turns.push({npc:stageBank[4][(baseOffset+1)%2][0],expected:stageBank[4][(baseOffset+1)%2][1],fr:stageBank[4][(baseOffset+1)%2][2]});
-if(level.rank>=3)turns.push({npc:specific[2].npc,expected:specific[2].user,fr:specific[2].fr});
-turns.push({npc:stageBank[5][baseOffset][0],expected:stageBank[5][baseOffset][1],fr:stageBank[5][baseOffset][2]});
-turns.push({npc:stageBank[6][(baseOffset+1)%2][0],expected:stageBank[6][(baseOffset+1)%2][1],fr:stageBank[6][(baseOffset+1)%2][2]});
-turns.forEach(t=>t.pron=pronunciation(t.expected));
-const vocab={};topic[4].split(';').forEach(x=>{const [en,fr,pron]=x.split('|');vocab[en]={fr,pron};});
-scenarios.push({id:`oral-${ti+1}-${level.key.replace('+','p')}`,icon:topic[0],category:topic[1],title:`${topic[2]} — ${level.suffix}`,counterpart:topic[3],level:level.key,levelLabel:level.label,rank:level.rank,duration:level.rank<=2?'2–3 min':'3–4 min',goal:`Gérer ${topic[2].toLowerCase()} en anglais dans une situation réelle.`,vocab,turns});
+topics.forEach((topic,ti)=>levels.forEach(level=>{
+ const [question,request,requestFr,detail,detailFr,obstacle,solution,solutionFr,reason,reasonFr]=content[ti];
+ const turns=[
+  {npc:question,expected:request,fr:requestFr},
+  {npc:'Could you give me a little more information?',expected:detail,fr:detailFr}
+ ];
+ if(level.rank>=2)turns.push({npc:'What would you like me to confirm?',expected:'Could you confirm the main details, please?',accepted:['Please confirm the main details.'],fr:'Pourriez-vous confirmer les principaux détails ?'});
+ if(level.rank>=3)turns.push({npc:obstacle,expected:solution,fr:solutionFr});
+ if(level.rank>=4)turns.push({npc:'Could you explain why that solution would work better for you?',expected:reason,fr:reasonFr});
+ turns.push({npc:'Is there anything else you would like to ask?',expected:'No, thank you. That is everything.',accepted:['No, thank you.','That is all, thank you.'],fr:'Non, merci. C’est tout.'});
+ const vocab={};topic[4].split(';').forEach(x=>{const [en,fr]=x.split('|');vocab[en]={fr};});
+ scenarios.push({id:`oral-${ti+1}-${level.key.replace('+','p')}`,icon:topic[0],category:topic[1],title:`${topic[2]} — ${level.suffix}`,counterpart:topic[3],level:level.key,levelLabel:level.label,rank:level.rank,duration:level.rank<=2?'1–2 min':'2–3 min',goal:`Gérer ${topic[2].toLowerCase()} en anglais.`,vocab,turns});
 }));
 window.ADULT_ORAL_SCENARIOS=scenarios;
 })();

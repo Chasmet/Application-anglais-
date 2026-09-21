@@ -1,1 +1,29 @@
-(()=>{const data=[...(window.ADULT_TRAINING||[])].sort(()=>Math.random()-.5),card=document.getElementById('trainingCard'),stepLabel=document.getElementById('trainStep'),scoreLabel=document.getElementById('trainScore'),fill=document.getElementById('trainFill');let i=0,score=0,locked=false;const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));function speak(text,rate=.75){try{if(window.AndroidTTS&&AndroidTTS.speak){AndroidTTS.speak(text,rate);return}}catch(e){}if('speechSynthesis'in window){const u=new SpeechSynthesisUtterance(text);u.lang='en-GB';u.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(u)}}function render(){locked=false;if(i>=data.length)return finish();const q=data[i];stepLabel.textContent='Question '+(i+1)+' / '+data.length;scoreLabel.textContent=score+' point'+(score>1?'s':'');fill.style.width=(i/data.length*100)+'%';card.innerHTML='<div class="eyebrow">'+esc(q.title)+'</div><div class="trainingPrompt">'+esc(q.prompt)+'</div><div class="trainingAnswers" id="ta">'+q.choices.map((c,idx)=>'<button class="answerBtn" data-i="'+idx+'"><div class="en">'+esc(c)+'</div></button>').join('')+'</div><div class="feedback" id="tf"></div>';document.querySelectorAll('#ta .answerBtn').forEach(b=>b.onclick=()=>choose(b,q));}function choose(btn,q){if(locked)return;locked=true;const idx=Number(btn.dataset.i),good=idx===q.answer;btn.classList.add(good?'good':'bad');document.querySelector('#ta .answerBtn[data-i="'+q.answer+'"]').classList.add('good');if(good)score++;const fb=document.getElementById('tf');fb.className='feedback show '+(good?'ok':'no');fb.innerHTML='<b>'+(good?'Bonne réponse':'Réponse à retenir')+'</b><div style="margin-top:6px">'+esc(q.choices[q.answer])+'</div><div style="color:#ffd45b;margin-top:6px">🔊 '+esc(q.pron)+'</div><div style="color:#9db2b6;margin-top:7px">'+esc(q.explain)+'</div><div class="sheetActions" style="margin-top:10px"><button class="audioBtn" id="hearTrain">🔊 Écouter</button><button class="primary" id="nextTrain">Continuer</button></div>';document.getElementById('hearTrain').onclick=()=>speak(q.choices[q.answer]);document.getElementById('nextTrain').onclick=()=>{i++;render()};}function finish(){fill.style.width='100%';const xp=Number(localStorage.getItem('adultXp')||0)+score*3;localStorage.setItem('adultXp',xp);card.innerHTML='<div class="eyebrow">Session terminée</div><h2 style="margin:6px 0">'+score+' / '+data.length+'</h2><p style="color:var(--muted)">Les formulations correctes sont pensées pour être utilisables immédiatement dans des situations réelles.</p><div class="sheetActions"><button class="primary" id="again">Nouvelle série</button><a class="secondary" style="text-align:center;text-decoration:none" href="adult.html">Mode adulte</a></div>';document.getElementById('again').onclick=()=>location.reload()}render()})();
+(() => {
+  'use strict';
+  const bank=window.ADULT_TRAINING||[], store=LearningStore, $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+  let order=bank.map((_,i)=>i),i=0,score=0,locked=false,completed=false;
+  for(let n=order.length-1;n>0;n--){const j=Math.floor(Math.random()*(n+1));[order[n],order[j]]=[order[j],order[n]];}
+  const saved=store.getSession('adultTraining');
+  if(new URLSearchParams(location.search).has('resume')&&saved&&Array.isArray(saved.order)&&saved.order.length===bank.length&&new Set(saved.order).size===bank.length&&saved.order.every(id=>Number.isInteger(id)&&bank[id])){order=saved.order;i=Math.max(0,Math.min(order.length,Number(saved.i)||0));score=Math.max(0,Math.min(i,Number(saved.score)||0));}
+  function save(){if(!completed)store.saveSession('adultTraining',{order,i:i+(locked?1:0),score});}
+  function render(){
+    LearningAudio.stop();locked=false;if(i>=order.length)return finish();save();
+    const q=bank[order[i]];$('trainStep').textContent=`Question ${i+1} / ${order.length}`;$('trainScore').textContent=`${score} point${score>1?'s':''}`;$('trainFill').style.width=(i/order.length*100)+'%';
+    $('trainingCard').innerHTML=`<div class="eyebrow">${esc(q.title)}</div><div class="trainingPrompt">${esc(q.prompt)}</div><div class="trainingAnswers" id="ta">${q.choices.map((c,n)=>`<button class="answerBtn" data-i="${n}"><div class="en">${esc(c)}</div></button>`).join('')}</div><div class="feedback" role="status" id="tf"></div>`;
+    document.querySelectorAll('#ta .answerBtn').forEach(b=>b.onclick=()=>choose(b,q));
+  }
+  function choose(button,q){
+    if(locked)return;locked=true;const good=Number(button.dataset.i)===q.answer;if(good)score++;
+    button.classList.add(good?'good':'bad');document.querySelectorAll('#ta button').forEach(b=>{b.disabled=true;if(Number(b.dataset.i)===q.answer)b.classList.add('good');});save();
+    $('tf').className='feedback show '+(good?'ok':'no');$('tf').innerHTML=`<b>${good?'Bonne réponse':'Réponse à retenir'}</b><p>${esc(q.choices[q.answer])}</p><p>${esc(q.explain)}</p><div class="sheetActions"><button class="audioBtn" id="hearTrain">🔊 Écouter</button><button class="primary" id="nextTrain">Continuer</button></div>`;
+    $('hearTrain').onclick=()=>LearningAudio.speak(q.choices[q.answer]);$('nextTrain').onclick=()=>{i++;render();};
+  }
+  function finish(){
+    completed=true;store.clearSession('adultTraining');$('trainFill').style.width='100%';
+    if(store.markActivity('adult-training'))store.write('adultXp',(Number(store.read('adultXp',0))||0)+score*3);
+    $('trainingCard').innerHTML=`<div class="eyebrow">Session terminée</div><h2>${score} / ${order.length}</h2><p>Rejoue les situations pour mémoriser les formulations utiles.</p><div class="sheetActions"><button class="primary" id="again">Nouvelle série</button><a class="secondary" href="adult.html">Mode adulte</a></div>`;
+    $('again').onclick=()=>{location.href='adult-training.html';};
+  }
+  window.addEventListener('pagehide',save);render();
+})();

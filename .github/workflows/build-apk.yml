@@ -1,85 +1,136 @@
-name: Construire APK Android
-
+name: Vérifier et construire Anglais+
 on:
   push:
-    branches: [ main ]
-    paths: ['*.html','*.css','*.js','icon.svg','manifest.webmanifest','android/**','.github/workflows/build-apk.yml']
+    branches: [main]
   pull_request:
-    branches: [ main ]
-    paths: ['*.html','*.css','*.js','icon.svg','manifest.webmanifest','android/**','.github/workflows/build-apk.yml']
+    branches: [main]
   workflow_dispatch:
-
 permissions:
-  contents: write
-
+  contents: read
+concurrency:
+  group: anglais-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts
+      - run: npm run check && npm test
+  android:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '17' }
+        with: {distribution: temurin, java-version: '17'}
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
-        with: { gradle-version: '8.10.2' }
-
-      - name: Vérifier JavaScript
-        run: |
-          for f in app.js words.js words-debutant.js words-moyen.js words-confirme.js lessons.js phrases-extra.js activities-extra.js content-ultra.js corrections-plus.js academie.js chiffres.js vocabulaire.js grammaire.js grammaire-ux.js grammar-data.js verb-pronunciation.js french-verb-data.js adult-data.js adult-conversation.js adult-training.js adult-scenarios-160.js adult-oral.js passive-oral.js settings.js sw.js; do node --check "$f"; done
-          node -e "global.window={};require('./adult-scenarios-160.js');if(window.ADULT_ORAL_SCENARIOS.length!==160)throw new Error('Il faut exactement 160 situations');console.log('Situations interactives:',window.ADULT_ORAL_SCENARIOS.length)"
-          grep -q 'Oral mains libres' adult.html
-          grep -q '240 programmes' adult.html
-          grep -q 'AndroidUpdater' settings.js
-          grep -q 'GitHub Releases' settings.html
-          grep -q 'onNativeTtsFinished' adult-oral.js
-          grep -q 'AndroidTTS.preload' adult-oral.js
-
-      - name: Vérifier Android, Kokoro et updater
+        with: {gradle-version: '8.10.2'}
+      - name: Compiler et tester Android
         working-directory: android
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+      - name: Vérifier les fichiers embarqués
+        run: python scripts/check-apk.py android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Activer KVM
         run: |
-          gradle --no-daemon :app:dependencies --configuration debugRuntimeClasspath
-          grep -q 'setOnPlaybackCompleteListener' app/src/main/java/com/chasmet/quizanglais/KokoroTtsManager.java
-          grep -q 'EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 450L' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
-          grep -q 'AndroidUpdater' app/src/main/java/com/chasmet/quizanglais/MainActivity.java
-          grep -q 'releases/latest' app/src/main/java/com/chasmet/quizanglais/UpdateManager.java
-          grep -q 'REQUEST_INSTALL_PACKAGES' app/src/main/AndroidManifest.xml
-
-      - name: Construire APK
-        working-directory: android
-        run: gradle --no-daemon clean assembleDebug
-
-      - name: Vérifier contenu APK
-        run: |
-          APK='android/app/build/outputs/apk/debug/app-debug.apk'
-          test -f "$APK"
-          unzip -l "$APK" | grep -E 'model_quantized\.onnx|kokoro.*\.onnx'
-          for f in index.html settings.html settings.js adult.html adult-oral.html adult-oral.js passive-oral.html passive-oral.js adult-scenarios-160.js; do unzip -l "$APK" | grep "assets/$f"; done
-          grep -q 'android.permission.RECORD_AUDIO' android/app/src/main/AndroidManifest.xml
-          grep -q 'android.permission.REQUEST_INSTALL_PACKAGES' android/app/src/main/AndroidManifest.xml
-          test $(stat -c%s "$APK") -gt 83886080
-
-      - name: Préparer APK nommé
-        run: |
-          VERSION=$(grep "versionName" android/app/build.gradle | head -1 | sed -E "s/.*versionName '([^']+)'.*/\1/")
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          cp android/app/build/outputs/apk/debug/app-debug.apk "Anglais-Plus-v${VERSION}.apk"
-
-      - name: Publier artifact GitHub Actions
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Vérifier le démarrage sur Android 35
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: default
+          arch: x86_64
+          ram-size: 2048M
+          heap-size: 256M
+          disable-animations: true
+          script: bash scripts/smoke-android.sh
+      - name: Conserver l’APK de test séparé
         uses: actions/upload-artifact@v4
         with:
-          name: Anglais-Plus-v${{ env.VERSION }}
-          path: Anglais-Plus-v${{ env.VERSION }}.apk
+          name: Anglais-Plus-4.0.0-preview
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
-      - name: Publier GitHub Release pour la mise à jour interne
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Conserver les résultats
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports-android
+          path: |
+            android/app/build/reports/
+            android-smoke-*.xml
+            android-smoke.png
+            android-smoke*.log
+  release:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier la configuration de signature
+        id: signing
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [[ -n "$KEYSTORE" && -n "$STORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'APK de test compilé. Publication suspendue : configurer les quatre secrets de signature avec la clé de la version actuellement distribuée. Aucun APK incompatible ne remplace la release existante.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-java@v4
+        if: steps.signing.outputs.ready == 'true'
+        with: {distribution: temurin, java-version: '17'}
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+        if: steps.signing.outputs.ready == 'true'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.signing.outputs.ready == 'true'
+        with: {gradle-version: '8.10.2'}
+      - name: Signer avec la clé privée existante
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/anglais-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          chmod 600 "$ANDROID_KEYSTORE_PATH"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          cd android
+          gradle --no-daemon :app:assembleRelease
+      - name: Vérifier la compatibilité avant publication
+        if: steps.signing.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v${VERSION}"
-          APK="Anglais-Plus-v${VERSION}.apk"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$APK" --clobber
-          else
-            gh release create "$TAG" "$APK" --title "Anglais+ Academy ${VERSION}" --generate-notes
-          fi
+          mkdir previous-release
+          gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.apk' --dir previous-release
+          python scripts/verify-release.py android/app/build/outputs/apk/release/app-release.apk previous-release
+          python scripts/check-apk.py android/app/build/outputs/apk/release/app-release.apk
+      - name: Publier une nouvelle version sans remplacer un ancien APK
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(python -c "import re;print(re.search(r\"versionName '([^']+)'\",open('android/app/build.gradle').read())[1])")
+          cp android/app/build/outputs/apk/release/app-release.apk "Anglais-Plus-v${VERSION}.apk"
+          sha256sum "Anglais-Plus-v${VERSION}.apk" > "Anglais-Plus-v${VERSION}.apk.sha256"
+          gh release create "v${VERSION}" "Anglais-Plus-v${VERSION}.apk" "Anglais-Plus-v${VERSION}.apk.sha256" --target "$GITHUB_SHA" --title "Anglais+ ${VERSION}" --notes-file RELEASE-NOTES.md

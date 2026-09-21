@@ -22,18 +22,7 @@
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;'
   }[char]));
 
-  function speak(text, rate = 0.72) {
-    if (window.AndroidTTS && typeof window.AndroidTTS.speak === 'function') {
-      window.AndroidTTS.speak(String(text), rate);
-      return;
-    }
-    if (!('speechSynthesis' in window)) return;
-    const utterance = new SpeechSynthesisUtterance(String(text));
-    utterance.lang = 'en-US';
-    utterance.rate = rate;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
-  }
+  function speak(text,rate=.78){return LearningAudio.speak(String(text),rate);}
 
   function renderAlphabet() {
     const alphabetGrid = document.getElementById('alphabetGrid');
@@ -59,7 +48,7 @@
       document.querySelectorAll('[data-tab]').forEach(tab => tab.classList.toggle('active', tab === button));
       document.getElementById('alphabetPanel').classList.toggle('active', button.dataset.tab === 'alphabet');
       document.getElementById('verbsPanel').classList.toggle('active', button.dataset.tab === 'verbs');
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      LearningAudio.stop();
     });
   });
 

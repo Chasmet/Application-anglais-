@@ -1,0 +1,15 @@
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #ffd54a;outline-offset:4px}
+button:disabled{cursor:default;opacity:.55}
+button,a.back,input,select{min-height:44px}
+.settings label{display:block;margin:12px 0 5px;font-weight:700}
+.settings select{width:100%;padding:12px;border-radius:12px;background:#0b2527;color:#fff;border:1px solid #56757a;font-size:16px}
+.resumeLearning{display:block;padding:18px;margin:18px 0;border-radius:18px;background:#1d5d53;color:#fff;text-decoration:none;font-weight:800;text-align:center}
+.learningNotice{padding:12px;border:1px solid #ffd54a;border-radius:12px;color:#ffd54a;margin:10px 0}
+.audioStatus{min-height:24px;color:#9eefff;font-size:14px;line-height:1.5}
+html[data-text-size=large] body{font-size:19px}
+html[data-text-size=large] p,html[data-text-size=large] small,html[data-text-size=large] button,html[data-text-size=large] input,html[data-text-size=large] select,html[data-text-size=large] .translation,html[data-text-size=large] .fr,html[data-text-size=large] .pron{font-size:18px!important;line-height:1.55}
+.filtersOral label{display:grid;gap:6px;color:#bfd5d7;font-size:14px}
+.typedOral{display:flex;gap:8px;margin:12px 0}.typedOral input{min-width:0;flex:1;padding:12px;border-radius:12px;border:1px solid #58777b;background:#0b2527;color:#fff;font-size:16px}.typedOral button{padding:12px;border-radius:12px}
+.backupPreview{white-space:pre-wrap;word-break:break-word}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
