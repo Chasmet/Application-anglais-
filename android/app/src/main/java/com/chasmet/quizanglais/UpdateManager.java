@@ -92,7 +92,7 @@ public final class UpdateManager {
         if (!downloading.compareAndSet(false, true)) return;
         final String digest = expectedHash; final long size = expectedSize;
         worker.execute(() -> {
-            HttpURLConnection connection = null; File temporary = new File(updateDir(), "update.part");
+            HttpURLConnection connection = null; File temporary = new File(updateDir(), "update.part.apk");
             try {
                 File apk = new File(updateDir(), "update.apk");
                 if (apk.isFile() && version.equals(prefs.getString("pending_version", "")) && digest.equalsIgnoreCase(fileHash(apk))) {

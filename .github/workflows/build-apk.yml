@@ -64,7 +64,8 @@ jobs:
           name: rapports-android
           path: |
             android/app/build/reports/
-            android-smoke.xml
+            android-smoke-*.xml
+            android-smoke.png
             android-smoke.log
   release:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

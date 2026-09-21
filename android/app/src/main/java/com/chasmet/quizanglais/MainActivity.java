@@ -23,6 +23,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -61,7 +65,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.appRoot), (view, insets) -> {
+            Insets safe = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
+            view.setPadding(safe.left, safe.top, safe.right, safe.bottom);
+            return insets;
+        });
 
         textToSpeech = new TextToSpeech(this, this);
         frenchTextToSpeech = new TextToSpeech(this, status -> initFrenchTts(status));
@@ -151,10 +162,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         for (Voice voice : voices) {
             Locale locale = voice.getLocale();
             if (locale == null || !"en".equalsIgnoreCase(locale.getLanguage())) continue;
-            int score = voice.getQuality() * 25 - voice.getLatency() * 3;
+            int score = voice.getQuality() * 3 - voice.getLatency() * 25;
             String country = locale.getCountry();
             if ("US".equalsIgnoreCase(country)) score += 70; else if ("GB".equalsIgnoreCase(country)) score += 55; else score += 20;
-            if (!voice.isNetworkConnectionRequired()) score += 45;
+            if (!voice.isNetworkConnectionRequired()) score += 100000;
             String name = voice.getName() == null ? "" : voice.getName().toLowerCase(Locale.US);
             if (name.contains("enhanced") || name.contains("premium") || name.contains("high")) score += 35;
             if (name.contains("compact") || name.contains("low")) score -= 15;
@@ -171,10 +182,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         for (Voice voice : voices) {
             Locale locale = voice.getLocale();
             if (locale == null || !"fr".equalsIgnoreCase(locale.getLanguage())) continue;
-            int score = voice.getQuality() * 25 - voice.getLatency() * 3;
+            int score = voice.getQuality() * 3 - voice.getLatency() * 25;
             String country = locale.getCountry();
             if ("FR".equalsIgnoreCase(country)) score += 90; else if ("BE".equalsIgnoreCase(country) || "CA".equalsIgnoreCase(country) || "CH".equalsIgnoreCase(country)) score += 45; else score += 20;
-            if (!voice.isNetworkConnectionRequired()) score += 45;
+            if (!voice.isNetworkConnectionRequired()) score += 100000;
             String name = voice.getName() == null ? "" : voice.getName().toLowerCase(Locale.FRANCE);
             if (name.contains("enhanced") || name.contains("premium") || name.contains("high")) score += 35;
             if (name.contains("compact") || name.contains("low")) score -= 15;

@@ -17,4 +17,4 @@ Ne jamais committer un keystore, ni en créer un autre pour contourner une incom
 
 Le workflow compare la signature et le code de version à l’APK de la dernière release avant publication. Une version déjà publiée n’est jamais remplacée. Incrémenter `versionCode`, `versionName`, les notes et le nom du cache du service worker à chaque release.
 
-La validation automatique comprend les parcours web sous jsdom, les règles de mise à jour sous JUnit, Android Lint, le contenu de l’APK et un démarrage sur émulateur Android 35. La latence réelle du micro, les voix installées, la permission d’installation et les interruptions audio restent à vérifier sur téléphone.
+La validation automatique comprend les parcours web sous jsdom, les règles de mise à jour sous JUnit, Android Lint, le contenu de l’APK et le démarrage, les réglages et le pont de mise à jour natif sur émulateur Android 35. La latence réelle du micro, les voix installées, la permission d’installation et les interruptions audio restent à vérifier sur téléphone.
