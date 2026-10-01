@@ -72,7 +72,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('a.back').forEach(a => a.setAttribute('aria-label', 'Retour'));
     const last = read('learning_last_session', null);
-    const routes = { quiz: 'quiz.html', adultOral: 'adult-oral.html', adultTraining: 'adult-training.html', adultConversation: 'adult-conversation.html', passive: 'passive-oral.html' };
+    const routes = { quiz: 'quiz.html', quizReading: 'training-reading.html', adultOral: 'adult-oral.html', adultTraining: 'adult-training.html', adultConversation: 'adult-conversation.html', passive: 'passive-oral.html' };
     const button = document.getElementById('resumeLearning');
     if (button && last && routes[last.module]) { button.hidden = false; button.href = routes[last.module] + '?resume=1'; }
   });

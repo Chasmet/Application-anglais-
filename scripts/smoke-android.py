@@ -33,11 +33,42 @@ def tap(xml, label):
     assert y1 > 0 and x2 > x1 and y2 > y1
     adb('shell', 'input', 'tap', str((x1+x2)//2), str((y1+y2)//2))
 
+def scroll_and_tap(label, filename):
+    for _ in range(4):
+        xml = screen(filename)
+        for node in ET.fromstring(xml).iter('node'):
+            if label not in (node.get('text', '') + node.get('content-desc', '')) or node.get('clickable') != 'true':
+                continue
+            bounds = list(map(int, re.findall(r'\d+', node.get('bounds', ''))))
+            if len(bounds) == 4 and bounds[2] > bounds[0] and bounds[3] > bounds[1] and bounds[1] > 0:
+                tap(xml, label)
+                return
+        size = re.search(r'(\d+)x(\d+)', adb('shell', 'wm', 'size'))
+        width, height = map(int, size.groups())
+        adb('shell', 'input', 'swipe', str(width//2), str(height*4//5), str(width//2), str(height//4), '350')
+    raise AssertionError(f'Control not visible after scrolling: {label}')
+
 home = wait_text('Anglais', 'android-smoke-home.xml')
 tap(home, 'Réglages')
-settings = wait_text('4.0.0-preview', 'android-smoke-settings.xml')
+version = re.search(r"versionName '([^']+)'", pathlib.Path('android/app/build.gradle').read_text()).group(1)
+settings = wait_text(version + '-preview', 'android-smoke-settings.xml')
 tap(settings, 'Rechercher une mise à jour')
 wait_text('Version de test', 'android-smoke-update.xml')
+adb('shell', 'input', 'keyevent', '4')
+home = wait_text('Mode Classique', 'android-smoke-return.xml')
+tap(home, 'Mode Classique')
+classic = wait_text('Entraînement type 2', 'android-smoke-classic.xml')
+tap(classic, 'Entraînement type 2')
+reading = wait_text('Lecture seule', 'android-smoke-reading-home.xml')
+scroll_and_tap('5 questions', 'android-smoke-reading-home.xml')
+question = wait_text('Lis et choisis la traduction', 'android-smoke-reading-question.xml')
+buttons = [n for n in ET.fromstring(question).iter('node') if n.get('class') == 'android.widget.Button' and n.get('clickable') == 'true' and n.get('text') not in ('Retour', 'AFFICHER UN INDICE', 'VALIDER') and n.get('text')]
+assert len(buttons) == 4, f'Expected four written choices: {question}'
+tap(question, buttons[0].get('text'))
+tap(screen('android-smoke-reading-selected.xml'), 'VALIDER')
+correction = wait_text('CONTINUER', 'android-smoke-reading-correction.xml')
+assert 'Écouter la bonne réponse' not in correction, correction
+assert 'Lent' not in correction, correction
 with open('android-smoke.png', 'wb') as image:
     subprocess.run(['adb', 'exec-out', 'screencap', '-p'], stdout=image, check=True)
 pid = adb('shell', 'pidof', 'com.chasmet.quizanglais.preview').strip()
@@ -47,4 +78,4 @@ pathlib.Path('android-smoke.log').write_text(log)
 assert 'FATAL EXCEPTION' not in log, log
 assert 'Uncaught ReferenceError' not in log, log
 assert 'Uncaught TypeError' not in log, log
-print('Android 35: home, settings, version and native updater bridge verified')
+print('Android 35: home, updater and reading type 2 question/correction verified')

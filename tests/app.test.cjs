@@ -109,3 +109,68 @@ test('typing correction treats user markup as text',async t=>{
   const p=await page(t,'quiz.html');p.w.LearningStore.saveSession('quiz',{profile:'Yvane',level:'debutant',mission:{id:'test'},rounds:[{type:'typing',item:{en:'Good morning.',fr:'Bonjour.'}}],index:0,score:0,hearts:5,xpEarned:0,validated:false});
   const q=await page(t,'quiz.html',{storage:p.storage(),query:'?resume=1'});const input=q.d.getElementById('typingInput');input.value='<img src=x onerror=alert(1)>';input.dispatchEvent(new q.w.Event('input'));q.d.getElementById('validate').click();await tick();assert.equal(q.d.querySelectorAll('#feedback img,#reveal img,#correctionPlus img').length,0);assert.equal(q.d.querySelectorAll('[onerror]').length,0);
 });
+
+test('classic menu keeps the original training and adds reading type 2',async t=>{
+  const p=await page(t,'classic.html');
+  assert.equal(p.d.querySelector('a[href="quiz.html"] strong').textContent,'Entraînement');
+  assert.equal(p.d.querySelector('a[href="training-reading.html"] strong').textContent,'Entraînement type 2');
+});
+test('reading type 2 completes a varied session with no audio or microphone',async t=>{
+  const p=await page(t,'training-reading.html');
+  p.w.SpeechRecognition=p.w.webkitSpeechRecognition=function(){throw new Error('Microphone forbidden in reading mode');};
+  p.w.LearningAudio.speak=()=>{throw new Error('Audio forbidden in reading mode');};
+  p.d.querySelector('[data-quick="10"]').click();
+  const rounds=p.w.LearningStore.getSession('quizReading').rounds;
+  assert.ok(rounds.some(q=>q.type==='reading'));assert.ok(rounds.some(q=>q.type==='sentence'));assert.ok(rounds.some(q=>q.type==='dialogue'));
+  assert.ok(rounds.every(q=>!['audio','listenEnglish','typing'].includes(q.type)));
+  for(const q of rounds){
+    assert.equal(p.d.querySelectorAll('.audioPanel,#speakNormal,#speakSlow').length,0);
+    assert.doesNotMatch(p.d.getElementById('instruction').textContent,/entendue|écoute/i);
+    if(q.type==='pairs'){
+      for(const en of p.d.querySelectorAll('.pairBtn[data-side="en"]')){en.click();p.d.querySelector(`.pairBtn[data-side="fr"][data-pair="${en.dataset.pair}"]`).click();}
+    }else if(q.type==='sentence'){
+      assert.ok(p.d.getElementById('exercise').textContent.includes(q.item.fr));
+      for(const token of p.d.querySelectorAll('#tokenBank .token'))token.click();
+    }else{
+      if(q.type==='reading')assert.equal(p.d.querySelector('.promptCard').textContent,q.item.en);
+      p.d.querySelector('.answer,.trueBtn').click();
+    }
+    assert.equal(p.d.getElementById('validate').disabled,false);p.d.getElementById('validate').click();
+    await new Promise(r=>setTimeout(r,45));
+    assert.equal(p.d.querySelector('#correctionSpeak'),null);assert.ok(p.d.getElementById('reveal').classList.contains('show'));
+    p.d.getElementById('validate').click();
+  }
+  assert.ok(p.d.getElementById('result').classList.contains('active'));
+  assert.equal(p.w.LearningStore.getSession('quizReading'),null);
+  assert.equal(p.calls.filter(c=>c.id).length,0);
+});
+test('reading progress and resume are independent from the original training',async t=>{
+  const p=await page(t,'quiz.html');p.d.querySelector('[data-quick="5"]').click();
+  const original=p.w.LearningStore.getSession('quiz'),storage=p.storage();
+  storage.qa3_stats_Yvane=JSON.stringify({xp:230,best:90});
+  const reading=await page(t,'training-reading.html',{storage});reading.d.querySelector('[data-quick="5"]').click();
+  reading.d.querySelector('.answer').click();reading.d.getElementById('validate').click();
+  const resumed=await page(t,'training-reading.html',{storage:reading.storage(),query:'?resume=1'});
+  assert.match(resumed.d.getElementById('questionMeta').textContent,/Question 2 sur 5/);
+  assert.deepEqual(JSON.parse(JSON.stringify(resumed.w.LearningStore.getSession('quiz'))),JSON.parse(JSON.stringify(original)));
+  assert.equal(resumed.w.localStorage.getItem('qa3_stats_Yvane'),storage.qa3_stats_Yvane);
+  const backup=JSON.parse(resumed.w.LearningStore.exportData());assert.ok(backup.entries.learning_session_quizReading_Yvane);assert.ok(backup.entries.qa3_reading_mastery_Yvane);
+  const home=await page(t,'index.html',{storage:resumed.storage()});home.d.dispatchEvent(new home.w.Event('DOMContentLoaded'));
+  assert.equal(home.d.getElementById('resumeLearning').getAttribute('href'),'training-reading.html?resume=1');
+  const originalAgain=await page(t,'quiz.html',{storage:resumed.storage(),query:'?resume=1'});
+  assert.match(originalAgain.d.getElementById('questionMeta').textContent,/Question 1 sur 5/);assert.ok(originalAgain.d.getElementById('speakNormal'));assert.ok(originalAgain.calls.some(c=>c.id));
+});
+test('reading type 2 daily, level test, review, themes and roadmap stay silent',async t=>{
+  for(const level of ['debutant','moyen','confirme']){
+    const p=await page(t,'training-reading.html');p.w.LearningAudio.speak=()=>{throw new Error('Unexpected audio');};
+    p.d.querySelector(`[data-level="${level}"]`).click();
+    assert.doesNotMatch(p.d.getElementById('missions').textContent,/écoute|dictée/i);
+    for(const start of [()=>p.d.getElementById('dailyBtn').click(),()=>p.d.getElementById('placementBtn').click(),()=>p.d.getElementById('grammarBtn').click(),()=>p.d.querySelector('[data-theme]').click(),()=>{p.d.querySelector('.mission').click();p.d.getElementById('startMission').click();}]){
+      start();const rounds=p.w.LearningStore.getSession('quizReading').rounds;assert.ok(rounds.every(q=>!['audio','listenEnglish','typing'].includes(q.type)));
+      p.d.getElementById('backBtn').click();
+    }
+    p.w.LearningStore.write(`qa3_reading_mistakes_Yvane`,[{id:'reading:cat',type:'reading',item:{en:'cat',fr:'chat',level},level}]);
+    p.d.getElementById('backBtn').click();p.d.getElementById('reviewBtn').click();assert.equal(p.d.querySelector('.promptCard').textContent,'cat');
+    assert.equal(p.calls.filter(c=>c.id).length,0);
+  }
+});
