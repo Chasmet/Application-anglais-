@@ -54,7 +54,7 @@ version = re.search(r"versionName '([^']+)'", pathlib.Path('android/app/build.gr
 settings = wait_text(version + '-preview', 'android-smoke-settings.xml')
 tap(settings, 'Rechercher une mise à jour')
 wait_text('Version de test', 'android-smoke-update.xml')
-adb('shell', 'input', 'keyevent', '4')
+tap(screen('android-smoke-update.xml'), 'Retour')
 home = wait_text('Mode Classique', 'android-smoke-return.xml')
 tap(home, 'Mode Classique')
 classic = wait_text('Entraînement type 2', 'android-smoke-classic.xml')
