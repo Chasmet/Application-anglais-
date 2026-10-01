@@ -1,8 +1,8 @@
-const CACHE_NAME='quiz-anglais-v16';
+const CACHE_NAME='quiz-anglais-v17';
 const FILES=[
 './learning-core.js','./audio-controller.js','./speech-evaluation.js','./learning-accessibility.css','./','./index.html','./classic.html','./settings.html','./settings.js',
 './adult.html','./adult-conversation.html','./adult-training.html','./adult-oral.html','./passive-oral.html','./adult.css','./adult-oral.css','./adult-data.js','./adult-conversation.js','./adult-training.js','./adult-scenarios-160.js','./adult-oral.js','./passive-oral.js',
-'./quiz.html','./style.css','./app.js','./words.js','./words-debutant.js','./words-moyen.js','./words-confirme.js','./lessons.js','./phrases-extra.js','./activities-extra.js','./content-ultra.js','./corrections-plus.js','./academie.html','./academie.js','./chiffres.html','./chiffres.js','./vocabulaire.html','./vocabulaire.js','./grammaire.html','./grammaire.js','./grammaire-ux.js','./grammaire-ux.css','./grammar-data.js','./verb-pronunciation.js','./french-verb-data.js','./learning-tools.css','./manifest.webmanifest','./icon.svg'];
+'./quiz.html','./training-reading.html','./style.css','./app.js','./training-engine.js','./training-feedback.js','./words.js','./words-debutant.js','./words-moyen.js','./words-confirme.js','./lessons.js','./phrases-extra.js','./activities-extra.js','./content-ultra.js','./corrections-plus.js','./academie.html','./academie.js','./chiffres.html','./chiffres.js','./vocabulaire.html','./vocabulaire.js','./grammaire.html','./grammaire.js','./grammaire-ux.js','./grammaire-ux.css','./grammar-data.js','./verb-pronunciation.js','./french-verb-data.js','./learning-tools.css','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(FILES)));
 });

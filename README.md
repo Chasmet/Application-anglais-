@@ -1,4 +1,4 @@
-# Quiz Anglais+ 3
+# Anglais+ Academy
 
 Application mobile anglais-français pensée pour Android, utilisable hors ligne et sans API.
 
@@ -33,6 +33,10 @@ Application mobile anglais-français pensée pour Android, utilisable hors ligne
 - Voix normale et voix lente
 - Affichage de l’anglais et du français après validation
 
+## Entraînement type 2
+
+Depuis le Mode Classique, ouvre « Entraînement type 2 » pour apprendre uniquement en lisant : traductions, paires, phrases à remettre en ordre, mots manquants, dialogues écrits et grammaire. Les questions et corrections sont silencieuses, sans micro. Ce mode garde ses propres scores, erreurs et séances à reprendre. L’entraînement habituel reste disponible.
+
 ## Progression
 
 - Profils séparés Yvane et Nelvyn
@@ -50,7 +54,7 @@ Application mobile anglais-français pensée pour Android, utilisable hors ligne
 
 ## APK Android
 
-Le workflow `Vérifier et construire Anglais+` exécute les tests web et Android, compile l’application et vérifie son démarrage et ses réglages sur émulateur Android 35. L’artefact `Anglais-Plus-4.0.0-preview` contient une application de test séparée, « Anglais+ Test ».
+Le workflow `Vérifier et construire Anglais+` exécute les tests web et Android, compile l’application et vérifie son démarrage et ses réglages sur émulateur Android 35. L’artefact `Anglais-Plus-4.1.0-preview` contient une application de test séparée, « Anglais+ Test ».
 
 La publication de l’APK principal nécessite la clé privée correspondant à la version actuellement distribuée. Le workflow vérifie cette compatibilité avant de créer une nouvelle release ; sans les secrets de signature, seule la version de test est produite. Voir [DEVELOPMENT.md](DEVELOPMENT.md).
 
@@ -60,7 +64,10 @@ La version 4.0 ajoute la reprise des séances, l’export/restauration de la pro
 
 - `index.html` : écrans de l’application
 - `style.css` : interface mobile
-- `app.js` : moteur des quiz et de la progression
+- `training-engine.js` : moteur des quiz et de la progression
+- `training-feedback.js` : corrections détaillées
+- `training-reading.html` : entraînement type 2 en lecture seule
+- `app.js` : compatibilité avec les anciennes pages en cache
 - `words.js` : banque historique
 - `words-debutant.js` : vocabulaire A1
 - `words-moyen.js` : vocabulaire A2–B1

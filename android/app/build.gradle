@@ -10,8 +10,8 @@ android {
         applicationId 'com.chasmet.quizanglais'
         minSdk 24
         targetSdk 35
-        versionCode 24
-        versionName '4.0.0'
+        versionCode 25
+        versionName '4.1.0'
     }
 
     buildFeatures {
@@ -56,7 +56,7 @@ tasks.register('syncWebAssets', Copy) {
     from(webRoot) {
         include 'learning-core.js', 'audio-controller.js', 'speech-evaluation.js', 'learning-accessibility.css', 'index.html', 'classic.html', 'adult.html', 'adult-conversation.html', 'adult-training.html', 'adult-oral.html', 'passive-oral.html', 'settings.html',
                 'adult.css', 'adult-oral.css', 'adult-data.js', 'adult-conversation.js', 'adult-training.js', 'adult-scenarios-160.js', 'adult-oral.js', 'passive-oral.js', 'settings.js',
-                'quiz.html', 'style.css', 'app.js',
+                'quiz.html', 'training-reading.html', 'style.css', 'app.js', 'training-engine.js', 'training-feedback.js',
                 'words.js', 'words-debutant.js', 'words-moyen.js', 'words-confirme.js',
                 'lessons.js', 'phrases-extra.js', 'activities-extra.js', 'content-ultra.js', 'corrections-plus.js',
                 'academie.html', 'academie.js', 'chiffres.html', 'chiffres.js',
