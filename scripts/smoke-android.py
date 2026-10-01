@@ -65,7 +65,7 @@ question = wait_text('Lis et choisis la traduction', 'android-smoke-reading-ques
 buttons = [n for n in ET.fromstring(question).iter('node') if n.get('class') == 'android.widget.Button' and n.get('clickable') == 'true' and n.get('text') not in ('Retour', 'AFFICHER UN INDICE', 'VALIDER') and n.get('text')]
 assert len(buttons) == 4, f'Expected four written choices: {question}'
 tap(question, buttons[0].get('text'))
-tap(screen('android-smoke-reading-selected.xml'), 'VALIDER')
+scroll_and_tap('VALIDER', 'android-smoke-reading-selected.xml')
 correction = wait_text('CONTINUER', 'android-smoke-reading-correction.xml')
 assert 'Écouter la bonne réponse' not in correction, correction
 assert 'Lent' not in correction, correction

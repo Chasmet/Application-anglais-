@@ -61,7 +61,7 @@
   function currentRoadmap(){return READING_MODE?ROADMAPS[state.level].map(m=>({...m,title:m.id==='c8'?'Lecture et compréhension':m.title})):ROADMAPS[state.level]}
   function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
   function sample(a,n){return shuffle(a).slice(0,Math.min(n,a.length))}
-  function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
+  function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active');if(READING_MODE)window.scrollTo(0,0)}
   function starsText(n){return '★'.repeat(n)+'☆'.repeat(3-n)}
   function normalise(s){return String(s??'').toLowerCase().replace(/[’‘]/g,"'").normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9' ]/g,'').replace(/\s+/g,' ').trim()}
   function escapeHtml(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
